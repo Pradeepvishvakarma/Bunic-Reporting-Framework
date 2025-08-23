@@ -13,7 +13,7 @@ import com.bunic.reportingframework.collection.service.CollectionService;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
-@RequestMapping("/bunic")
+@RequestMapping("/collections")
 public class CollectionController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CollectionController.class);
@@ -26,7 +26,7 @@ public class CollectionController {
 		return "Welcome to hello World";
 	}
 
-	@PostMapping("/collections/configure")
+	@PostMapping("/configure")
 	@ResponseBody
 	@Operation(summary = "configure reports metadata")
 	public String configureMetadataAndViews() {
