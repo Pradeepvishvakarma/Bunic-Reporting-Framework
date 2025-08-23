@@ -1,6 +1,10 @@
 package com.bunic.reportingframework.task.service;
 
 import com.bunic.reportingframework.collection.model.Column;
+import com.bunic.reportingframework.task.dao.TaskManagerDao;
+import com.bunic.reportingframework.task.model.Task;
+import com.bunic.reportingframework.task.model.TaskScheduler;
+import com.bunic.reportingframework.task.model.TaskType;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.apache.poi.ss.usermodel.Cell;
@@ -10,16 +14,38 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.KafkaException;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class TaskManagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagerService.class);
+
+    @Autowired
+    private TaskManagerDao taskManagerDao;
+
+    @Autowired
+    @Qualifier("emailTaskKafkaTemplate")
+    private KafkaTemplate<String, Task> emailTaskKafkaTemplate;
+
+    @Value("bunic.reportingframework.task.email.topic")
+    private String emailTaskTopic;
+
+    @Value("bunic.reportingframework.email.report.path")
+    private String reportFilePath;
 
     public void createExcel() throws Exception {
         var data = getData();
@@ -138,5 +164,49 @@ public class TaskManagerService {
         }
 
         workbook.close();
+    }
+
+    public Map<String, Object> getTaskParams(TaskScheduler scheduler){
+         return new HashMap<>();
+    }
+
+    public void saveTask(TaskScheduler scheduler, Task task) throws Exception {
+        saveAndSchedulerTask(task);
+    }
+
+    public String getTimesByCronTriggerTime(String cronTriggerTime){
+        return "";
+    }
+
+    public void saveAndSchedulerTask(Task task) throws Exception {
+        taskManagerDao.saveTask(task);
+        schedule(task);
+    }
+
+    private void schedule(Task task) throws Exception {
+        if(null == task){
+            throw new IllegalArgumentException("Task to schedule cannot be null");
+        }
+        LOGGER.info("Task manager publishing task {}", task);
+        sendMessage(task);
+    }
+
+    private void sendMessage(Task task) throws Exception {
+        LOGGER.info("Task manager send message task {} {}", task.getType(), task.getId());
+        CompletableFuture<SendResult<String, Task>> future;
+        if(TaskType.EMAIL_REPORT.equals(task.getType())){
+            future = emailTaskKafkaTemplate.send(emailTaskTopic, task.getId(), task);
+        } else {
+            throw new IllegalArgumentException("Task type is Invalid");
+        }
+        LOGGER.info("Task Manager Service - sendMessage task {} completed", task);
+
+        future.whenComplete((result, ex) -> {
+            if(null == ex){
+                LOGGER.info("Task manager published message {}", task);
+            } else {
+                throw new KafkaException(String.format("Task Manager Service - error while publishing task [%s] due to [%s]", task.getType(), ex.getMessage()), ex);
+            }
+        });
     }
 }
