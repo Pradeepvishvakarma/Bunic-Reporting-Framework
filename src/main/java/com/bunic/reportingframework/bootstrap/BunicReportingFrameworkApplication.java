@@ -1,4 +1,4 @@
-package com.bunic.reporting_framework;
+package com.bunic.reportingframework.bootstrap;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
