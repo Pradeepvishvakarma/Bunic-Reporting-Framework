@@ -1,5 +1,8 @@
 package com.bunic.reportingframework.collection.model;
 
+import lombok.Getter;
+
+@Getter
 public enum NumberFormatRule {
 
 	NORMAL("normal"), POSITIVE_NEGATIVE("positive-negative"), BREACH_STYLING("breach-styling");
@@ -13,6 +16,4 @@ public enum NumberFormatRule {
 	public String getRule() {
 		return rule;
 	}
-	
-	
 }
