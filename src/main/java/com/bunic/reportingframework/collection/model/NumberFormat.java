@@ -1,7 +1,13 @@
 package com.bunic.reportingframework.collection.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 
+@Data
+@AllArgsConstructor
 public class NumberFormat {
 
 	private String rule;
@@ -10,29 +16,5 @@ public class NumberFormat {
 	
 	public NumberFormat() {
 		this.rule = NumberFormatRule.NORMAL.getRule();
-	}
-
-	public String getRule() {
-		return rule;
-	}
-
-	public void setRule(String rule) {
-		this.rule = rule;
-	}
-
-	public String getField() {
-		return field;
-	}
-
-	public void setField(String field) {
-		this.field = field;
-	}
-
-	public Map<String, String> getValues() {
-		return values;
-	}
-
-	public void setValues(Map<String, String> values) {
-		this.values = values;
 	}
 }
