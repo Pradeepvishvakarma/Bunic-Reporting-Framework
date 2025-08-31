@@ -33,4 +33,11 @@ public class TaskManagerDao {
         LOGGER.info("Task Manager save task {}", task);
         primaryTemplate.save(task, "ReportingFrameworkTask");
     }
+
+    public Task getTaskById(String taskId){
+        LOGGER.info("Get Task by id: {}", taskId);
+        Query findQuery = new Query();
+        findQuery.addCriteria(Criteria.where("_id").is(taskId));
+        return primaryTemplate.findOne(findQuery, Task.class, "ReportingFrameworkTask");
+    }
 }

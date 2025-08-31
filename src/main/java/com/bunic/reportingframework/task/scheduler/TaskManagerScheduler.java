@@ -37,8 +37,7 @@ public class TaskManagerScheduler {
     @Autowired
     private ThreadPoolTaskScheduler taskScheduler;
 
-    private EventService eventService;
-    private List<ScheduledFuture<?>> runningJobs;
+    private List<ScheduledFuture<?>> runningJobs = new ArrayList<>();;
     private ScheduledFuture<?> runningTimer;
 
     @PostConstruct
@@ -48,6 +47,12 @@ public class TaskManagerScheduler {
 
     private void initSchedulers(){
         LOGGER.info("initSchedulers - initializing schedulers");
+        cancel();
+        schedule();
+    }
+
+    public void refreshSchedulers(){
+        LOGGER.info("refresh scheduler - initializing all schedulers");
         cancel();
         schedule();
     }
@@ -82,7 +87,7 @@ public class TaskManagerScheduler {
         if(scheduler == null){
             return false;
         }
-        if(!CronExpression.isValidExpression(scheduler.getCronTimeZone()) || !TIMEZONES.contains(scheduler.getCronTimeZone())){
+        if(!CronExpression.isValidExpression(scheduler.getCronTriggerTime()) || !TIMEZONES.contains(scheduler.getCronTimeZone())){
             LOGGER.error(MSG_INVALID_CRON_EXPRESSION, scheduler.getId(), scheduler.getCronTriggerTime(), scheduler.getCronTimeZone());
             return false;
         }
