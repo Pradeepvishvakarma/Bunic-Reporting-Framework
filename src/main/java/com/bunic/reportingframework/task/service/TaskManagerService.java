@@ -2,6 +2,7 @@ package com.bunic.reportingframework.task.service;
 
 import com.bunic.reportingframework.collection.model.Column;
 import com.bunic.reportingframework.task.dao.TaskManagerDao;
+import com.bunic.reportingframework.task.dto.TaskDto;
 import com.bunic.reportingframework.task.model.Task;
 import com.bunic.reportingframework.task.model.TaskScheduler;
 import com.bunic.reportingframework.task.model.TaskType;
@@ -14,8 +15,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -34,15 +35,15 @@ public class TaskManagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagerService.class);
 
+    private final KafkaTemplate<String, String> emailTaskKafkaTemplate;
+
+    @Autowired
+    public TaskManagerService(KafkaTemplate<String, String> emailTaskKafkaTemplate) {
+        this.emailTaskKafkaTemplate = emailTaskKafkaTemplate;
+    }
+
     @Autowired
     private TaskManagerDao taskManagerDao;
-
-    @Autowired
-    @Qualifier("emailTaskKafkaTemplate")
-    private KafkaTemplate<String, Task> emailTaskKafkaTemplate;
-
-    @Value("bunic.reportingframework.task.email.topic")
-    private String emailTaskTopic;
 
     @Value("bunic.reportingframework.email.report.path")
     private String reportFilePath;
@@ -173,14 +174,22 @@ public class TaskManagerService {
     public void saveTask(TaskScheduler scheduler, Task task) throws Exception {
         saveAndSchedulerTask(task);
     }
+    public TaskDto saveTask(TaskDto taskDto) throws Exception {
+        Task task = new Task();
+        BeanUtils.copyProperties(taskDto, task);
+        Task daoTask = saveAndSchedulerTask(task);
+        BeanUtils.copyProperties(daoTask, taskDto);
+        return taskDto;
+    }
 
     public String getTimesByCronTriggerTime(String cronTriggerTime){
         return "";
     }
 
-    public void saveAndSchedulerTask(Task task) throws Exception {
+    public Task saveAndSchedulerTask(Task task) throws Exception {
         taskManagerDao.saveTask(task);
         schedule(task);
+        return task;
     }
 
     private void schedule(Task task) throws Exception {
@@ -193,9 +202,9 @@ public class TaskManagerService {
 
     private void sendMessage(Task task) throws Exception {
         LOGGER.info("Task manager send message task {} {}", task.getType(), task.getId());
-        CompletableFuture<SendResult<String, Task>> future;
+        CompletableFuture<SendResult<String, String>> future;
         if(TaskType.EMAIL_REPORT.equals(task.getType())){
-            future = emailTaskKafkaTemplate.send(emailTaskTopic, task.getId(), task);
+            future = emailTaskKafkaTemplate.send("bunic-email-topic", task.getId(), task.getId());
         } else {
             throw new IllegalArgumentException("Task type is Invalid");
         }
@@ -209,4 +218,9 @@ public class TaskManagerService {
             }
         });
     }
+
+    public Task getTaskById(String taskId){
+        return taskManagerDao.getTaskById(taskId);
+    }
+
 }

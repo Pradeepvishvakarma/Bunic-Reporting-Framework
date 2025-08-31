@@ -32,11 +32,6 @@ public class EventService {
         LOGGER.info("Event Publishing event {}", event.getEventName());
         this.sendMessage(event, this.topicName);
     }
-    public void publish(String eventName){
-        Event event = new Event();
-        event.setEventName(eventName);
-        this.publish(event);
-    }
 
     public void subscribe(String eventName, EventListener eventListener){
         this.listeners.computeIfAbsent(eventName, (k) -> new CopyOnWriteArrayList<>());

@@ -1,7 +1,6 @@
 package com.bunic.reportingframework.collection.model;
 
 public class Metadata {
-	private long id;
 	private String name;
 	private String code;
 	private String description;
@@ -9,12 +8,7 @@ public class Metadata {
 	public String getName() {
 		return name;
 	}
-	public long getId() {
-		return id;
-	}
-	public void setId(long id) {
-		this.id = id;
-	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -30,5 +24,14 @@ public class Metadata {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Metadata{");
+        sb.append("name:'").append(name).append('\'');
+        sb.append(", code:'").append(code).append('\'');
+        sb.append(", description:'").append(description).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }
