@@ -3,12 +3,13 @@ package com.bunic.reportingframework.task.dto;
 import com.bunic.reportingframework.task.model.TaskType;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.lang.Object;
 import java.util.Map;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class TaskDto {
 
     private String id;

@@ -21,10 +21,10 @@ public class CollectionController {
 	@Autowired
 	CollectionService collectionService;
 
-	@GetMapping("/hello")
-	public String helloWorld() {
-		return "Welcome to hello World";
-	}
+    @GetMapping("/hello")
+    public String helloWorld() {
+        return "Welcome to hello World";
+    }
 
 	@PostMapping("/configure")
 	@ResponseBody

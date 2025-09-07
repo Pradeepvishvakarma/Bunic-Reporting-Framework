@@ -1,18 +1,119 @@
 [
-	{
-		
-		"name":"Pradeep",
-		"code":"01",
-		"description":"NA"
-	},
-	{
-		"name":"Ashutosh",
-		"code":"02",
-		"description":"NA"
-	},
-	{
-		"name":"Sunny",	
-		"code":"03",
-		"description":"NA"
-	}
+  {
+    "code": "riskbyportfolio",
+    "name": "Risk By Portfolio",
+    "store": {
+      "database": "BUNIC",
+      "collection": "risk",
+      "queryFile": "riskbyportfolio"
+    },
+    "columns": [
+      {
+        "title": "Region",
+        "field": "region",
+        "type": "string"
+      },
+      {
+        "title": "Desk",
+        "field": "desk",
+        "type": "string"
+      },
+      {
+        "title": "Portfolio",
+        "field": "portfolio",
+        "type": "string"
+      },
+      {
+        "title": "Total Pnl",
+        "field": "totalPnl",
+        "type": "number"
+      },
+      {
+        "title": "IRDL",
+        "field": "irdl",
+        "type": "number"
+      }
+    ],
+    "emailReportProperties": {
+      "subject": "BUNIC"
+    }
+  },
+  {
+    "code": "riskbytenor",
+    "name": "Risk By Tenor",
+    "store": {
+      "database": "BUNIC",
+      "collection": "risk",
+      "queryFile": "riskbyportfolio"
+    },
+    "columns": [
+      {
+        "title": "Region",
+        "field": "region",
+        "type": "string"
+      },
+      {
+        "title": "Desk",
+        "field": "desk",
+        "type": "string"
+      },
+      {
+        "title": "Portfolio",
+        "field": "portfolio",
+        "type": "string"
+      },
+      {
+        "title": "Total Pnl",
+        "field": "totalPnl",
+        "type": "number"
+      },
+      {
+        "title": "IRDL",
+        "field": "irdl",
+        "type": "number"
+      }
+    ],
+    "emailReportProperties": {
+      "subject": "BUNIC"
+    }
+  },
+  {
+    "code": "riskbytenor2",
+    "name": "Risk By Tenor",
+    "store": {
+      "database": "BUNIC",
+      "collection": "risk",
+      "queryFile": "riskbyportfolio"
+    },
+    "columns": [
+      {
+        "title": "Region",
+        "field": "region",
+        "type": "string"
+      },
+      {
+        "title": "Desk",
+        "field": "desk",
+        "type": "string"
+      },
+      {
+        "title": "Portfolio",
+        "field": "portfolio",
+        "type": "string"
+      },
+      {
+        "title": "Total Pnl",
+        "field": "totalPnl",
+        "type": "number"
+      },
+      {
+        "title": "IRDL",
+        "field": "irdl",
+        "type": "number"
+      }
+    ],
+    "emailReportProperties": {
+      "subject": "BUNIC"
+    }
+  }
 ]
