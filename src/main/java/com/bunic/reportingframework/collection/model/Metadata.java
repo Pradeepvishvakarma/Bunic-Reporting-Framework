@@ -1,29 +1,23 @@
 package com.bunic.reportingframework.collection.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.Map;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Metadata {
 	private String name;
 	private String code;
 	private String description;
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	public String getCode() {
-		return code;
-	}
-	public void setCode(String code) {
-		this.code = code;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    private Store store;
+    private PivotConfig pivotConfig;
+    private List<Column> columns;
+    private Map<String, Object> emailReportProperties;
 
     @Override
     public String toString() {

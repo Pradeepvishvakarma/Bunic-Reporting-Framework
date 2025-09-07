@@ -1,6 +1,5 @@
 package com.bunic.reportingframework.task.scheduler;
 
-import com.bunic.reportingframework.common.service.EventService;
 import com.bunic.reportingframework.task.dao.TaskManagerDao;
 import com.bunic.reportingframework.task.model.Task;
 import com.bunic.reportingframework.task.model.TaskScheduler;

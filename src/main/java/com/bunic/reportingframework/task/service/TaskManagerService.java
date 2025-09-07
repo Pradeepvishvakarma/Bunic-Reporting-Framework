@@ -35,10 +35,10 @@ public class TaskManagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagerService.class);
 
-    private final KafkaTemplate<String, String> emailTaskKafkaTemplate;
+    private final KafkaTemplate<String, Task> emailTaskKafkaTemplate;
 
     @Autowired
-    public TaskManagerService(KafkaTemplate<String, String> emailTaskKafkaTemplate) {
+    public TaskManagerService(KafkaTemplate<String, Task> emailTaskKafkaTemplate) {
         this.emailTaskKafkaTemplate = emailTaskKafkaTemplate;
     }
 
@@ -56,7 +56,7 @@ public class TaskManagerService {
 
     }
 
-    private List<DBObject> getData(){
+    public List<DBObject> getData(){
         var data = new ArrayList<DBObject>();
         var dbObject1 = new BasicDBObject();
         dbObject1.put("region","ASIA");
@@ -202,10 +202,11 @@ public class TaskManagerService {
 
     private void sendMessage(Task task) throws Exception {
         LOGGER.info("Task manager send message task {} {}", task.getType(), task.getId());
-        CompletableFuture<SendResult<String, String>> future;
+        CompletableFuture<SendResult<String, Task>> future;
         if(TaskType.EMAIL_REPORT.equals(task.getType())){
-            future = emailTaskKafkaTemplate.send("bunic-email-topic", task.getId(), task.getId());
+            future = emailTaskKafkaTemplate.send("bunic-email-topic-test", task.getId(), task);
         } else {
+
             throw new IllegalArgumentException("Task type is Invalid");
         }
         LOGGER.info("Task Manager Service - sendMessage task {} completed", task);
