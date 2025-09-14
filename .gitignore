@@ -5,6 +5,14 @@ target/
 build/
 out/
 
+
+.gitignore
+HELP.md
+mvnw.cmd
+output.xlsx
+.gitattributes
+.factorypath
+
 # Maven wrapper files
 .mvn/
 !/.mvn/wrapper/maven-wrapper.jar
