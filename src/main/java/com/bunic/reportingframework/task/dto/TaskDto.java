@@ -13,6 +13,7 @@ import java.util.Map;
 public class TaskDto {
 
     private String id;
+    private String userId;
     private TaskType type;
     private Map<String, Object> params;
     private String referenceId;

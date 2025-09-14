@@ -1,20 +1,25 @@
 package com.bunic.reportingframework.collection.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Map;
 
-@Data
-@AllArgsConstructor
+
+@Getter
+@Setter
 public class NumberFormat {
 
 	private String rule;
 	private String field;
 	private Map<String, String> values;
-	
-	public NumberFormat() {
+
+    public NumberFormat() {
 		this.rule = NumberFormatRule.NORMAL.getRule();
 	}
+
+    public NumberFormat(String rule, String field, Map<String, String> values) {
+        this.rule = rule;
+        this.field = field;
+        this.values = values;
+    }
 }
