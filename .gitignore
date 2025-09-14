@@ -1,18 +1,53 @@
-# Maven / Gradle build
+#############################
+# Build and dependency files
+#############################
 target/
 build/
+out/
 
-# IDE settings
+# Maven wrapper files
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Gradle files
+.gradle/
+*.gradle
+gradle-app.setting
+
+#############################
+# IDE specific files
+#############################
+# IntelliJ
 .idea/
+*.iml
 
-# Logs
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+#############################
+# Logs and temp files
+#############################
 *.log
+*.tmp
+*.swp
+*.swo
+*.bak
 
-# OS files
+#############################
+# Environment & secrets
+#############################
+.env
+*.key
+*.crt
+*.pem
+
+#############################
+# OS-specific files
+#############################
 .DS_Store
 Thumbs.db
-
-# Environment variables
-.env
-
-src.main.resources.application.properties
