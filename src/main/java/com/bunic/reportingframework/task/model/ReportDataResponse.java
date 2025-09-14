@@ -1,5 +1,6 @@
 package com.bunic.reportingframework.task.model;
 
+import com.bunic.reportingframework.collection.model.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ReportDataResponse {
+    private List<Column> columns;
     private List<NonPivotData> nonPivotedData;
     private List<PivotData> pivotedData;
     private GrandTotal grandTotal;
-
 }

@@ -2,7 +2,7 @@
   {
     "$match":
     {
-      "region": "ASIA"
+      "region": {"$exists": true}
     }
   }
 ]

@@ -1,18 +1,15 @@
 package com.bunic.reportingframework.email.service;
 
 import com.bunic.reportingframework.email.model.EmailProperties;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
 
 @Service
@@ -37,19 +34,21 @@ public class EmailSender {
                 MimeMessageHelper helper = new MimeMessageHelper(msg, true);
 
                 setAddresses(emailProperties, helper);
+//                mailSender.send(msg);
             } catch (Exception e) {
                 throw new RuntimeException("Email runner - problem on send email report " + e.getMessage(), e);
             }
         }
     }
 
-    private void setAddresses(EmailProperties emailProperties, MimeMessageHelper helper) throws MessagingException {
-        helper.setFrom(emailProperties.getFrom());
-        helper.setTo(emailProperties.getMailIds().toArray(new String[0]));
-        helper.setSubject("Pradeep Report");
+    private void setAddresses(EmailProperties emailProperties, MimeMessageHelper helper) throws Exception {
+        helper.setFrom("pradeepv4919@gmail.com");
+        helper.setTo("pradeepv4919@gmail.com");
+        helper.setSubject(emailProperties.getSubject());
         helper.setText(String.valueOf(emailProperties.getContent()), true);
         var newPath = String.format("%s%s", emailProperties.getFilePath(), "abc.eml");
-        System.out.println("newPath: " + newPath);
+        var newExcelPath = String.format("%s%s", emailProperties.getFilePath(), "output.xlsx");
+        helper.addAttachment(newExcelPath, new File(newExcelPath));
         // Save the email as .eml file
         String emlPath = emailProperties.getFilePath(); // Add this property to EmailProperties
         MimeMessage mimeMessage = helper.getMimeMessage();
@@ -59,8 +58,4 @@ public class EmailSender {
             throw new RuntimeException(e);
         }
     }
-
-//    private String getAbsolutePath(){
-//
-//    }
 }

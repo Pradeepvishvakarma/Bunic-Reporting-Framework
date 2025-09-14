@@ -12,6 +12,6 @@ import java.util.Map;
 @NoArgsConstructor
 public class NonPivotData {
     private String id;
-    private DBObject value;
+    private DBObject values;
     private Map<String, String> breachDetails;
 }

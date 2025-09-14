@@ -13,8 +13,9 @@ import java.util.Map;
 public class PivotData {
 
     private String id;
-    private String level;
-    private Map<String, BigDecimal> rowGroupValue;
-    private Map<String, Map<String, BigDecimal>> columnGroupValue;
+    private int level;
+    private Map<String, BigDecimal> rowGroupValues;
+    private Map<String, Map<String, BigDecimal>> columnGroupValues;
     private Map<String, String> rowGroupedBreachDetails;
+    private String breachDetailsByLevel;
 }

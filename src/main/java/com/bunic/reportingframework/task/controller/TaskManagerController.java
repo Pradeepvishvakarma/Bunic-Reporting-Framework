@@ -27,13 +27,6 @@ public class TaskManagerController {
         return "Welcome to hello World";
     }
 
-    @PostMapping("/excel")
-    @ResponseBody
-    @Operation(summary = "configure reports metadata")
-    public void generateExcel() throws Exception {
-        taskManagerService.createExcel();
-    }
-
     @GetMapping("/refresh-schedulers")
     @ResponseBody
     @Operation(summary = "configure Schedulers")

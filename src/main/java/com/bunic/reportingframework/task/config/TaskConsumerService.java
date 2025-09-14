@@ -1,6 +1,7 @@
 package com.bunic.reportingframework.task.config;
 
 import com.bunic.reportingframework.task.model.Task;
+import com.bunic.reportingframework.task.model.TaskStatus;
 import com.bunic.reportingframework.task.runner.EmailReportTaskRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ public class TaskConsumerService {
 
     @KafkaListener(topics = "bunic-email-topic-test", groupId = "bunic-email-group-test-${random.uuid}")
     public void consumeTask(Task task) throws Exception {
+        task.setStatus(TaskStatus.STARTED);
         LOGGER.info("Received TaskId from Kafka Consumer: {}", task);
         emailReportTaskRunner.run(task);
     }

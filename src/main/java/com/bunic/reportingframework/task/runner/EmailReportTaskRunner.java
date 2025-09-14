@@ -25,12 +25,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.bunic.reportingframework.common.constant.Constant.*;
+import static com.bunic.reportingframework.common.constant.Constant.FILE_SAPERATOR;
 
 @Component
 public class EmailReportTaskRunner {
@@ -68,10 +68,9 @@ public class EmailReportTaskRunner {
             errors.put("errorMessage", e.getMessage());
             emailReportProcessorService.setTaskFailure(task, errors);
         }
-
+        task.setCompletedTime(new Date());
         task.setStatus(TaskStatus.COMPLETED);
-
-
+        emailReportProcessorService.saveTask(task);
     }
 
     private CollectionRequest getCollectionRequest(Task task) {
@@ -83,19 +82,19 @@ public class EmailReportTaskRunner {
         return new CollectionRequest(report, filters);
     }
 
-    private void prepareAndSendReport(Metadata metadata, Task task, CollectionRequest request) throws IOException {
+    private void prepareAndSendReport(Metadata metadata, Task task, CollectionRequest request) throws Exception {
         task.setPath(createTaskLocation(task.getId()));
         var data = getData(metadata, task, request);
         var emailTemplateData = emailReportProcessorService.getEmailTemplateData(task, metadata, request, data);
         var emailTemplate = getEmailTemplate(metadata);
-        LOGGER.info("Email template configured: {} ", emailTemplate);
         StringWriter htmlReport = emailReportProcessorService.prepareReportHtml(emailTemplate, emailTemplateData);
-        System.out.println("htmlReport = " + htmlReport);
         emailReportProcessorService.sendEmail(htmlReport, emailTemplateData);
     }
 
     private String getEmailTemplate(Metadata metadata) {
-        return (String) CommonUtil.getFieldValue("emailTemplate", metadata.getEmailReportProperties(), "default_template.ftlh");
+        var emailTemplate = (String) CommonUtil.getFieldValue("emailTemplate", metadata.getEmailReportProperties(), "default_template.ftlh");
+        LOGGER.info("Email template configured: {} ", emailTemplate);
+        return emailTemplate;
     }
 
     private Metadata getMetadata(Task task, CollectionRequest request) {
@@ -103,7 +102,7 @@ public class EmailReportTaskRunner {
     }
 
     private List<DBObject> getData(Metadata metadata, Task task, CollectionRequest request) throws IOException {
-        return collectionDao.getData(metadata);
+        return collectionDao.getData(metadata, task);
     }
 
     private void validateTask(Task task, Map<String, String> errors) throws IOException {

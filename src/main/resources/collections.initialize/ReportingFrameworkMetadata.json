@@ -7,6 +7,8 @@
       "collection": "risk",
       "queryFile": "riskbyportfolio"
     },
+    "accessLevel": "REGION_LEVEL",
+    "legends": ["Total Pnl in $K","FXDL in $K"],
     "columns": [
       {
         "title": "Region",
@@ -26,7 +28,10 @@
       {
         "title": "Total Pnl",
         "field": "totalPnl",
-        "type": "number"
+        "type": "number",
+        "numberFormat": {
+          "rule" : "positive-negative"
+        }
       },
       {
         "title": "IRDL",
@@ -35,7 +40,9 @@
       }
     ],
     "emailReportProperties": {
-      "subject": "BUNIC"
+      "reportName": "Risk By Portfolio as on 20 Sep 2025",
+      "subject": "BUNIC",
+      "emailBodyReport": true
     }
   },
   {
@@ -74,6 +81,7 @@
       }
     ],
     "emailReportProperties": {
+      "reportName": "Risk By Portfolio",
       "subject": "BUNIC"
     }
   },
@@ -113,6 +121,7 @@
       }
     ],
     "emailReportProperties": {
+      "reportName": "Risk By Portfolio by pradeep kumar vishvakarma as of 20 Sep 2025",
       "subject": "BUNIC"
     }
   }
