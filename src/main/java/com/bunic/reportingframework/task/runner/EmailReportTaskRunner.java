@@ -9,6 +9,7 @@ import com.bunic.reportingframework.task.model.Task;
 import com.bunic.reportingframework.task.model.TaskStatus;
 import com.bunic.reportingframework.task.model.TaskType;
 import com.bunic.reportingframework.task.service.EmailReportProcessorService;
+import com.bunic.reportingframework.user.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DBObject;
@@ -62,7 +63,8 @@ public class EmailReportTaskRunner {
         try {
             var request = getCollectionRequest(task);
             var metadata = getMetadata(task, request);
-            prepareAndSendReport(metadata, task, request);
+            var user = emailReportProcessorService.getUser(task);
+            prepareAndSendReport(metadata, task, user);
         } catch (Exception e) {
             LOGGER.error("|Alert| - Task manager - email runner  - Problem to generate email report for taskId: {}, exception: {}", task.getId(), e.getMessage(), e);
             errors.put("errorMessage", e.getMessage());
@@ -82,10 +84,10 @@ public class EmailReportTaskRunner {
         return new CollectionRequest(report, filters);
     }
 
-    private void prepareAndSendReport(Metadata metadata, Task task, CollectionRequest request) throws Exception {
+    private void prepareAndSendReport(Metadata metadata, Task task, User user) throws Exception {
         task.setPath(createTaskLocation(task.getId()));
-        var data = getData(metadata, task, request);
-        var emailTemplateData = emailReportProcessorService.getEmailTemplateData(task, metadata, request, data);
+        var data = getData(metadata, task);
+        var emailTemplateData = emailReportProcessorService.getEmailTemplateData(task, metadata, data, user);
         var emailTemplate = getEmailTemplate(metadata);
         StringWriter htmlReport = emailReportProcessorService.prepareReportHtml(emailTemplate, emailTemplateData);
         emailReportProcessorService.sendEmail(htmlReport, emailTemplateData);
@@ -101,7 +103,7 @@ public class EmailReportTaskRunner {
         return emailReportProcessorService.getMetadata(task);
     }
 
-    private List<DBObject> getData(Metadata metadata, Task task, CollectionRequest request) throws IOException {
+    private List<DBObject> getData(Metadata metadata, Task task) {
         return collectionDao.getData(metadata, task);
     }
 

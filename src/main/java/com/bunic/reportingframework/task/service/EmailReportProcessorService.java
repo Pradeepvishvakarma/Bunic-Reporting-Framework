@@ -1,7 +1,6 @@
 package com.bunic.reportingframework.task.service;
 
 import com.bunic.reportingframework.collection.dao.CollectionDao;
-import com.bunic.reportingframework.collection.model.CollectionRequest;
 import com.bunic.reportingframework.collection.model.Metadata;
 import com.bunic.reportingframework.collection.model.PivotConfig;
 import com.bunic.reportingframework.email.model.EmailProperties;
@@ -9,6 +8,7 @@ import com.bunic.reportingframework.email.service.EmailSender;
 import com.bunic.reportingframework.task.dao.TaskManagerDao;
 import com.bunic.reportingframework.task.model.Task;
 import com.bunic.reportingframework.task.model.TaskStatus;
+import com.bunic.reportingframework.user.model.User;
 import com.bunic.reportingframework.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DBObject;
@@ -47,9 +47,6 @@ public class EmailReportProcessorService {
     @Autowired
     private PivotTableService pivotTableService;
 
-    @Autowired
-    private TaskManagerService taskManagerService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void setTaskFailure(Task task, Map<String, String> errors){
@@ -83,14 +80,17 @@ public class EmailReportProcessorService {
         return metadata.getPivotConfig();
     }
 
-    public Map<String, Object> getEmailTemplateData(Task task, Metadata metadata, CollectionRequest request, List<DBObject> data) throws Exception {
-        var pivotConfig = getPivotConfig(task, metadata);
-        try {
-
-            System.out.println("pivotConfig = " + objectMapper.writeValueAsString(pivotConfig));
-        } catch (Exception e) {
-            throw new RuntimeException("Task manager - email runner - problem on prepare email report data " + e.getMessage());
+    public User getUser(Task task){
+        var userId = task.getUserId();
+        var user = userService.getUserByUserId(userId);
+        if(user == null) {
+            throw new RuntimeException("request is not authorised");
         }
+        return user;
+    }
+
+    public Map<String, Object> getEmailTemplateData(Task task, Metadata metadata, List<DBObject> data, User user) throws Exception {
+        var pivotConfig = getPivotConfig(task, metadata);
         var reportDataResponse = pivotTableService.getReportDataResponse(metadata, task, pivotConfig, data);
 
         try {
@@ -103,7 +103,6 @@ public class EmailReportProcessorService {
         var dataMap = new HashMap<String, Object>();
         dataMap.put("taskId", task.getId());
         dataMap.put("filePath", task.getPath());
-        dataMap.put("reportDescription", metadata.getDescription());
         dataMap.put("generatedDate", new Date());
         dataMap.put("columns", metadata.getColumns());
         dataMap.put("reportName",metadata.getEmailReportProperties().get("reportName"));
@@ -111,6 +110,8 @@ public class EmailReportProcessorService {
         dataMap.put("reportDate", getReportDate(task));
         dataMap.put("subject", metadata.getEmailReportProperties().get("reportName"));
         dataMap.put("emailBodyReport", metadata.getEmailReportProperties().get("emailBodyReport"));
+        dataMap.put("emailId", user.getEmailId());
+        dataMap.put("attachmentFileName", metadata.getEmailReportProperties().get("attachmentFileName"));
 
         if(pivotConfig != null){
             dataMap.put("isNonPivotReport", true);
@@ -151,9 +152,10 @@ public class EmailReportProcessorService {
 
     private EmailProperties getEmailReportProperties(Map<String, Object> emailTemplateData){
         EmailProperties emailProperties = new EmailProperties();
-        emailProperties.setFrom("pradeepv4919@gmil.com");
-        emailProperties.setMailIds(List.of("pradeepv4919@gmail.com"));
+        emailProperties.setFrom("bunic.corporation.ltd@gmail.com");
+        emailProperties.setMailIds((String) emailTemplateData.get("emailId"));
         emailProperties.setFilePath((String) emailTemplateData.get("filePath"));
+        emailProperties.setAttachmentName((String) emailTemplateData.get("attachmentFileName"));
         emailProperties.setSubject((String) emailTemplateData.get("subject"));
 //        emailProperties.setE
         return emailProperties;

@@ -34,7 +34,7 @@ public class EmailSender {
                 MimeMessageHelper helper = new MimeMessageHelper(msg, true);
 
                 setAddresses(emailProperties, helper);
-//                mailSender.send(msg);
+                mailSender.send(msg);
             } catch (Exception e) {
                 throw new RuntimeException("Email runner - problem on send email report " + e.getMessage(), e);
             }
@@ -42,13 +42,14 @@ public class EmailSender {
     }
 
     private void setAddresses(EmailProperties emailProperties, MimeMessageHelper helper) throws Exception {
-        helper.setFrom("pradeepv4919@gmail.com");
-        helper.setTo("pradeepv4919@gmail.com");
+        helper.setFrom("bunic.corporation.ltd@gmail.com");
+        helper.setTo(emailProperties.getMailIds());
         helper.setSubject(emailProperties.getSubject());
         helper.setText(String.valueOf(emailProperties.getContent()), true);
+
         var newPath = String.format("%s%s", emailProperties.getFilePath(), "abc.eml");
         var newExcelPath = String.format("%s%s", emailProperties.getFilePath(), "output.xlsx");
-        helper.addAttachment(newExcelPath, new File(newExcelPath));
+        helper.addAttachment(String.format("%s%s",emailProperties.getAttachmentName(),".xlsx"), new File(newExcelPath));
         // Save the email as .eml file
         String emlPath = emailProperties.getFilePath(); // Add this property to EmailProperties
         MimeMessage mimeMessage = helper.getMimeMessage();

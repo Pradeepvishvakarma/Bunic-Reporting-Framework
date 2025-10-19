@@ -1,6 +1,5 @@
 package com.bunic.reportingframework.user.dao;
 
-import com.bunic.reportingframework.collection.model.Metadata;
 import com.bunic.reportingframework.user.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,5 +31,19 @@ public class UserDao {
     public void saveUser(User user) {
         LOGGER.info("Add requested user {}", user);
         primaryTemplate.save(user, COLLECTION_USERS);
+    }
+
+    public void deleteUserByUserId(String userId) {
+        LOGGER.info("delete requested userId {}", userId);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userId").is(userId));
+        primaryTemplate.remove(query, COLLECTION_USERS);
+    }
+
+    public List<User> findAllUsers(){
+        LOGGER.info("fetch all users from db");
+        var ss = primaryTemplate.findAll(User.class, COLLECTION_USERS);
+        System.out.println("user list "+ss);
+        return ss;
     }
 }

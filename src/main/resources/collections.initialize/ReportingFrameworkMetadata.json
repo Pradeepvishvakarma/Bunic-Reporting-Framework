@@ -4,7 +4,7 @@
     "name": "Risk By Portfolio",
     "store": {
       "database": "BUNIC",
-      "collection": "risk",
+      "collection": "flashPnlRisk",
       "queryFile": "riskbyportfolio"
     },
     "accessLevel": "REGION_LEVEL",
@@ -36,13 +36,17 @@
       {
         "title": "IRDL",
         "field": "irdl",
-        "type": "number"
+        "type": "number",
+        "numberFormat": {
+          "rule" : "positive-negative"
+        }
       }
     ],
     "emailReportProperties": {
       "reportName": "Risk By Portfolio as on 20 Sep 2025",
       "subject": "BUNIC",
-      "emailBodyReport": true
+      "emailBodyReport": true,
+      "attachmentFileName": "RiskByPortfolio_{timestamp}"
     }
   },
   {

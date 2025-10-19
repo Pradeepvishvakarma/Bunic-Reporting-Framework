@@ -123,6 +123,7 @@ public class PivotTableService {
 
     private BigDecimal getFormattedValue(String format, BigDecimal value) {
         return switch (format) {
+            case null -> value;
             case "K" -> value.divide(BigDecimal.valueOf(1000)).setScale(0, RoundingMode.HALF_UP);
             case "MM" -> value.divide(BigDecimal.valueOf(1000000)).setScale(0, RoundingMode.HALF_UP);
             default -> value.divide(BigDecimal.valueOf(1)).setScale(0, RoundingMode.HALF_UP);
@@ -166,12 +167,26 @@ public class PivotTableService {
         var columns = metadata.getColumns().stream().filter(column -> !column.isHidden()).toList();
         reportDataResponse.setColumns(columns);
 
-        var NonPivotData = getNonPivotData(data, metadata);
+        var formattedData = getFormattedData(data, metadata);
+
+        var NonPivotData = getNonPivotData(formattedData, metadata);
         reportDataResponse.setNonPivotedData(NonPivotData);
 
         var grandTotal = new GrandTotal();
         reportDataResponse.setGrandTotal(grandTotal);
         return reportDataResponse;
+    }
+
+    private List<DBObject> getFormattedData(List<DBObject> data, Metadata metadata) {
+        metadata.getColumns().stream().filter(column -> column != null && column.getType().equalsIgnoreCase(TYPE_NUMBER))
+                .forEach(column -> data.stream().forEach(dbObject -> {
+                    if (dbObject.containsField(column.getField()) && dbObject.get(column.getField()) != null) {
+                        var value = new BigDecimal(dbObject.get(column.getField()).toString());
+                        var formattedValue = getFormattedValue(column.getFormat(), value);
+                        dbObject.put(column.getField(), formattedValue);
+                    }
+                }));
+        return data;
     }
 
     private List<NonPivotData> getNonPivotData(List<DBObject> data, Metadata metadata) {

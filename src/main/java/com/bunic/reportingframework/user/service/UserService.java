@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -28,7 +30,7 @@ public class UserService {
         return user;
     }
 
-    public String addUser(User user){
+    public String registerUser(User user){
         var validationParams = validateUser(user);
         if(validationParams.isEmpty()) {
             var existingUser = getUserByUserId(user.getUserId());
@@ -37,8 +39,8 @@ public class UserService {
             }
             user.setAccessLevel(StringUtil.isNotBlank(user.getAccessLevel())? user.getAccessLevel() : "GLOBAL");
             userDao.saveUser(user);
-            LOGGER.info("User added Successfully");
-            return "User added Successfully";
+            LOGGER.info("User registered Successfully");
+            return "User registered Successfully";
         }
         return String.format(String.join(", ",validationParams.values()));
     }
@@ -60,5 +62,35 @@ public class UserService {
             }
         }
         return validationMap;
+    }
+
+
+    public List<User> getAllUsers() {
+        return userDao.findAllUsers();
+    }
+
+    public Optional<User> getUserById(String userId) {
+        return Optional.of(userDao.getUser(userId));
+    }
+
+//    public String updateUser(String id, User updatedUser) {
+//        return userRepository.findById(id).map(existing -> {
+//            existing.setFullName(updatedUser.getFullName());
+//            existing.setEmail(updatedUser.getEmail());
+//            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+//                existing.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+//            }
+//            existing.setRole(updatedUser.getRole());
+//            userRepository.save(existing);
+//            return "User updated successfully!";
+//        }).orElse("User not found!");
+//    }
+
+    public String deleteUser(String userId) {
+        if (userDao.getUser(userId) != null) {
+            return "User not found!";
+        }
+        userDao.deleteUserByUserId(userId);
+        return "User deleted successfully!";
     }
 }

@@ -40,8 +40,12 @@ public class TaskManagerService {
     @Value("bunic.reportingframework.email.report.path")
     private String reportFilePath;
 
-    public Map<String, Object> getTaskParams(TaskScheduler scheduler){
-         return new HashMap<>();
+    public Map<String, Object> getTaskParams(TaskScheduler scheduler) {
+        var params = scheduler.getParams();
+        if (null != params && !params.isEmpty()) {
+            return params;
+        }
+        return params;
     }
 
     public void saveTask(TaskScheduler scheduler, Task task) throws Exception {
