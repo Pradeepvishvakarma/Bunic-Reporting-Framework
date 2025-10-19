@@ -98,6 +98,7 @@ public class TaskManagerScheduler {
         task.setType(scheduler.getType());
         task.setReferenceId(scheduler.getId());
         task.setStatus(TaskStatus.PENDING);
+        task.setUserId(scheduler.getUserId());
         return task;
     }
 }
