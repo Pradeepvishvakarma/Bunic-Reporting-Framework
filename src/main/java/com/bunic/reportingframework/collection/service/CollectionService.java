@@ -4,8 +4,12 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bunic.reportingframework.collection.controller.CollectionController;
 import com.bunic.reportingframework.collection.dao.CollectionDao;
+import com.bunic.reportingframework.exception.BunicException;
+import com.bunic.reportingframework.exception.BunicInvalidRequestException;
+import com.bunic.reportingframework.exception.BunicUnauthorizedException;
+import com.bunic.reportingframework.user.model.User;
+import com.bunic.reportingframework.user.service.UserService;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,9 @@ public class CollectionService {
     @Autowired
     CollectionDao collectionDao;
 
+    @Autowired
+    UserService userService;
+
     @PostConstruct
     private void init() throws Exception {
         LOGGER.info("Configuring Metadata and Views on Application Startup");
@@ -38,4 +45,29 @@ public class CollectionService {
 		List<Metadata> metadataList = Arrays.asList(metadataArray);
         collectionDao.SaveAllMetadata(metadataList);
 	}
+
+    public Metadata getMetadataByCode(User user, String reportCode) throws BunicException {
+        var metadataList = getMetadataList();
+        var metadata = metadataList.stream().filter(entry -> reportCode.equalsIgnoreCase(entry.getCode())).findFirst().orElse(null);
+        if(metadata == null){
+            throw new BunicInvalidRequestException("Metadata not found for report: " + reportCode);
+        }
+        hasAccess(user, metadata);
+        LOGGER.info("report: {} - metadata: {}", reportCode, metadata);
+        return metadata;
+    }
+
+    public List<Metadata> getMetadataList(){
+        return collectionDao.getAllMetadata();
+    }
+
+    public void hasAccess(User user, Metadata metadata) throws BunicUnauthorizedException {
+        if(user == null){
+            throw new BunicUnauthorizedException("request is not authorised");
+        }
+        var specifiedUsers = metadata.getUsers();
+        if (specifiedUsers != null && !specifiedUsers.isEmpty() && !specifiedUsers.contains(user.getUserId())) {
+            throw new BunicUnauthorizedException("User is not authorized to access this metadata");
+        }
+    }
 }

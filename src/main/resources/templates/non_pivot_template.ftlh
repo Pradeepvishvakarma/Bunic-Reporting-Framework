@@ -1,6 +1,6 @@
-<table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:0;">
-    <tr>
-      <td colspan="2" height="30pt">&nbsp;</td>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+    <tr style="margin:2px 0 10px 20px;">
+        <h2>${reportTitle!}</h2>
     </tr>
     <tr>
       <td colspan="2" class="content-log">
@@ -13,7 +13,7 @@
     </tr>
 
     <tr>
-      <td colspan="2" height="38pt">&nbsp;</td>
+      <td colspan="2" height="30pt">&nbsp;</td>
     </tr>
 
   <tr>
@@ -22,7 +22,7 @@
     </td>
   </tr>
   <tr>
-        <td colspan="2" height="38pt">&nbsp;</td>
+        <td colspan="2" height="30pt">&nbsp;</td>
       </tr>
   <tr>
     <td colspan="2" class="content-log">${(attachmentMessage)!}</td>

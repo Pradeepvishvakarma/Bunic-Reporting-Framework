@@ -1,8 +1,8 @@
 package com.bunic.reportingframework.task.runner;
 
 import com.bunic.reportingframework.collection.dao.CollectionDao;
-import com.bunic.reportingframework.collection.model.CollectionRequest;
 import com.bunic.reportingframework.collection.model.Filter;
+import com.bunic.reportingframework.collection.model.GroupColumn;
 import com.bunic.reportingframework.collection.model.Metadata;
 import com.bunic.reportingframework.common.util.CommonUtil;
 import com.bunic.reportingframework.task.model.Task;
@@ -26,10 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.bunic.reportingframework.common.constant.Constant.FILE_SAPERATOR;
 
@@ -61,10 +58,13 @@ public class EmailReportTaskRunner {
 
         LOGGER.info("Task manager - email runner  - executing email report task for taskId: {}", task.getId());
         try {
-            var request = getCollectionRequest(task);
-            var metadata = getMetadata(task, request);
             var user = emailReportProcessorService.getUser(task);
-            prepareAndSendReport(metadata, task, user);
+            var metadata = emailReportProcessorService.getMetadataByCode(user, (String) task.getParams().get("report"));
+            if (metadata.isGroupReportEnabled()){
+                prepareAndSendGroupReport(metadata, task, user);
+            } else {
+                prepareAndSendReport(metadata, task, user);
+            }
         } catch (Exception e) {
             LOGGER.error("|Alert| - Task manager - email runner  - Problem to generate email report for taskId: {}, exception: {}", task.getId(), e.getMessage(), e);
             errors.put("errorMessage", e.getMessage());
@@ -73,15 +73,6 @@ public class EmailReportTaskRunner {
         task.setCompletedTime(new Date());
         task.setStatus(TaskStatus.COMPLETED);
         emailReportProcessorService.saveTask(task);
-    }
-
-    private CollectionRequest getCollectionRequest(Task task) {
-        var filters = objectMapper.convertValue(task.getParams().get("filters"),
-                new TypeReference<List<Filter>>() {
-                }
-        );
-        var report = (String) task.getParams().get("report");
-        return new CollectionRequest(report, filters);
     }
 
     private void prepareAndSendReport(Metadata metadata, Task task, User user) throws Exception {
@@ -93,14 +84,70 @@ public class EmailReportTaskRunner {
         emailReportProcessorService.sendEmail(htmlReport, emailTemplateData);
     }
 
+    private void prepareAndSendGroupReport(Metadata metadata, Task task, User user) throws Exception {
+        task.setPath(createTaskLocation(task.getId()));
+        emailReportProcessorService.validateGroupReportParams(metadata.getGroupReport());
+
+        var groupReportData = new ArrayList<Map<String, Object>>();
+        var groupReportContent = new TreeMap<Integer, List<StringWriter>>();
+
+        var groupReport = metadata.getGroupReport();
+        var rows = groupReport.getRows();
+
+        for (int i = 0; !rows.isEmpty() && i < rows.size(); i++) {
+            var htmlReports = new ArrayList<StringWriter>();
+
+            for (GroupColumn col : rows.get(i).getCols()){
+                var childReportMetadata = emailReportProcessorService.getMetadataByCode(user, col.getReport());
+                var data = getData(childReportMetadata, task);
+                var collReportData = emailReportProcessorService.getEmailTemplateData(task, childReportMetadata, data, user);
+                var collEmailTemplate = getEmailTemplate(childReportMetadata, collReportData, col);
+                updateReportWidth(col, collReportData);
+                updateReportTitle(childReportMetadata, col, collReportData);
+                groupReportData.add(collReportData);
+
+                var htmlReport = emailReportProcessorService.prepareReportHtml(collEmailTemplate, collReportData);
+                htmlReports.add(htmlReport);
+            }
+            groupReportContent.put(i, htmlReports);
+        }
+
+        var groupReportEmailProps = emailReportProcessorService.getReportEmailProperty(task, metadata, null, null, user);
+        groupReportEmailProps.put("groupReportContent", groupReportContent);
+        String emailTemplate = (String) CommonUtil.getFieldValue("emailTemplate", metadata.getEmailReportProperties(), "group_report_template.ftlh");
+        StringWriter htmlGroupReport = emailReportProcessorService.prepareReportHtml(emailTemplate, groupReportEmailProps);
+        emailReportProcessorService.sendEmail(htmlGroupReport, groupReportEmailProps);
+    }
+
+    private void updateReportTitle(Metadata metadata, GroupColumn col, Map<String, Object> collReportData) {
+        if(col.getConfig() != null && col.getConfig().getTitle() != null){
+            collReportData.put("reportTitle", col.getConfig().getTitle());
+        } else {
+            collReportData.put("reportTitle", metadata.getName());
+        }
+    }
+
+    private void updateReportWidth(GroupColumn col, Map<String, Object> collReportData) {
+        if(col.getConfig() != null && col.getConfig().getWidth() != null){
+            collReportData.put("width", col.getConfig().getWidth());
+        }
+    }
+
     private String getEmailTemplate(Metadata metadata) {
         var emailTemplate = (String) CommonUtil.getFieldValue("emailTemplate", metadata.getEmailReportProperties(), "default_template.ftlh");
         LOGGER.info("Email template configured: {} ", emailTemplate);
         return emailTemplate;
     }
 
-    private Metadata getMetadata(Task task, CollectionRequest request) {
-        return emailReportProcessorService.getMetadata(task);
+    private String getEmailTemplate(Metadata metadata, Map<String, Object> collReportData, GroupColumn col) {
+        if(col.getConfig() != null && col.getConfig().getEmailTemplate() != null){
+            var emailTemplate = col.getConfig().getEmailTemplate();
+            LOGGER.info("Email template configured: {} for child report: {} in group report", emailTemplate, metadata.getCode());
+            return emailTemplate;
+        }
+        var emailTemplate = (boolean) collReportData.get("isNonPivotReport") ? "pivot_template.ftlh" : "non_pivot_template.ftlh";
+        LOGGER.info("Email template configured: {} for child report: {} in group report", emailTemplate, metadata.getCode());
+        return emailTemplate;
     }
 
     private List<DBObject> getData(Metadata metadata, Task task) {
@@ -130,7 +177,6 @@ public class EmailReportTaskRunner {
                     errors.put("report", "Task report cannot be empty.");
                 }
             }
-
         }
     }
 

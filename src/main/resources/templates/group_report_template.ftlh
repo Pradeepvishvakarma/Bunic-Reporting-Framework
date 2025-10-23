@@ -22,30 +22,28 @@
                             <#include "header.ftlh">
                         </td>
                     </tr>
-                    <#if isNonPivotReport?? && isNonPivotReport>
-                        <tr>
-                            <td width="20">&nbsp;</td>
-                            <td>
-                                <#include "pivot_template.ftlh">
-                            </td>
-                            <td width="20">&nbsp;</td>
-                        </tr>
-                    <#else>
-                        <tr>
-                            <td width="20">&nbsp;</td>
-                            <td>
-                                <#include "non_pivot_template.ftlh">
-                            </td>
-                            <td width="20">&nbsp;</td>
-                        </tr>
-                    </#if>
+
                     <tr>
-                        <td width="20">&nbsp;</td>
-                        <td>
-                            <#include "footer.ftlh">
-                        </td>
-                        <td width="20">&nbsp;</td>
+                        <#if groupReportContent??>
+                            <#list groupReportContent as key, value>
+                                <table width="100%" style="margin:2px 0 10px 20px;" border="0" cellspacing="0" cellpadding="0" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <#list value as htmlContent>
+                                                    ${htmlContent?no_esc}
+                                                </#list>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </#list>
+                        </#if>
                     </tr>
+
+                    <td>
+                        <#include "group_report_footer.ftlh">
+                    </td>
                 </table>
             </td>
         </tr>

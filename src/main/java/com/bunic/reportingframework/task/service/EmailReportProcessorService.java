@@ -1,24 +1,34 @@
 package com.bunic.reportingframework.task.service;
 
-import com.bunic.reportingframework.collection.dao.CollectionDao;
+import com.bunic.reportingframework.collection.model.GroupReport;
 import com.bunic.reportingframework.collection.model.Metadata;
 import com.bunic.reportingframework.collection.model.PivotConfig;
+import com.bunic.reportingframework.collection.service.CollectionService;
+import com.bunic.reportingframework.common.util.CommonUtil;
 import com.bunic.reportingframework.email.model.EmailProperties;
 import com.bunic.reportingframework.email.service.EmailSender;
+import com.bunic.reportingframework.exception.BunicException;
+import com.bunic.reportingframework.exception.BunicUnauthorizedException;
 import com.bunic.reportingframework.task.dao.TaskManagerDao;
 import com.bunic.reportingframework.task.model.Task;
+import com.bunic.reportingframework.task.model.TaskScheduler;
 import com.bunic.reportingframework.task.model.TaskStatus;
 import com.bunic.reportingframework.user.model.User;
 import com.bunic.reportingframework.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DBObject;
 import freemarker.template.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.StringWriter;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,11 +39,14 @@ public class EmailReportProcessorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailReportProcessorService.class);
 
+    @Value("${bunic.reportingframework.email.processor.from}")
+    public String businessEmailId;
+
     @Autowired
     private TaskManagerDao taskManagerDao;
 
     @Autowired
-    private CollectionDao collectionDao;
+    private CollectionService collectionService;
 
     @Autowired
     private UserService userService;
@@ -55,19 +68,6 @@ public class EmailReportProcessorService {
         LOGGER.error("|Alert| - Task manager - email runner  - Problem to generate email report for schedulerId: {}, exception: {}", task.getId(), task.getErrorMessage());
     }
 
-    public Metadata getMetadata(Task task){
-        var user = userService.getUserByUserId(task.getUserId());
-        if(user == null){
-            throw new RuntimeException("request is not authorised");
-        }
-        var metadataList = collectionDao.getAllMetadata();
-        var reportMetadata = metadataList.stream().filter(metadata -> ((String)task.getParams().get("report")).equalsIgnoreCase(metadata.getCode())).findFirst();
-        if(reportMetadata.isEmpty()){
-            throw new RuntimeException("Metadata not found for report: " + task.getParams().get("report"));
-        }
-        LOGGER.info("report: {} - metadata: {}", task.getParams().get("report"), reportMetadata.get());
-        return reportMetadata.get();
-    }
     public void saveTask(Task task){
         task.setCompletedTime(new Date());
         taskManagerDao.saveTask(task);
@@ -80,18 +80,18 @@ public class EmailReportProcessorService {
         return metadata.getPivotConfig();
     }
 
-    public User getUser(Task task){
+    public User getUser(Task task) throws BunicUnauthorizedException {
         var userId = task.getUserId();
         var user = userService.getUserByUserId(userId);
         if(user == null) {
-            throw new RuntimeException("request is not authorised");
+            throw new BunicUnauthorizedException("request is not authorised");
         }
         return user;
     }
 
     public Map<String, Object> getEmailTemplateData(Task task, Metadata metadata, List<DBObject> data, User user) throws Exception {
         var pivotConfig = getPivotConfig(task, metadata);
-        var reportDataResponse = pivotTableService.getReportDataResponse(metadata, task, pivotConfig, data);
+        var reportDataResponse = pivotTableService.getReportDataResponse(metadata, pivotConfig, data);
 
         try {
 
@@ -100,33 +100,73 @@ public class EmailReportProcessorService {
             throw new RuntimeException("Task manager - email runner - problem on prepare email report data " + e.getMessage());
         }
 
-        var dataMap = new HashMap<String, Object>();
-        dataMap.put("taskId", task.getId());
-        dataMap.put("filePath", task.getPath());
-        dataMap.put("generatedDate", new Date());
-        dataMap.put("columns", metadata.getColumns());
-        dataMap.put("reportName",metadata.getEmailReportProperties().get("reportName"));
-        dataMap.put("legends", metadata.getLegends());
-        dataMap.put("reportDate", getReportDate(task));
-        dataMap.put("subject", metadata.getEmailReportProperties().get("reportName"));
-        dataMap.put("emailBodyReport", metadata.getEmailReportProperties().get("emailBodyReport"));
-        dataMap.put("emailId", user.getEmailId());
-        dataMap.put("attachmentFileName", metadata.getEmailReportProperties().get("attachmentFileName"));
+        var emailTemplateData = getReportEmailProperty(task, metadata, null, data, user);
 
         if(pivotConfig != null){
-            dataMap.put("isNonPivotReport", true);
-            dataMap.put("pivotedReportData", reportDataResponse);
-            preparePivotEmailTemplateData(dataMap, pivotConfig);
+            emailTemplateData.put("isNonPivotReport", true);
+            emailTemplateData.put("pivotedReportData", reportDataResponse);
+            preparePivotEmailTemplateData(emailTemplateData, pivotConfig);
         } else {
-            dataMap.put("isNonPivotReport", false);
-            dataMap.put("reportData", reportDataResponse);
+            emailTemplateData.put("isNonPivotReport", false);
+            emailTemplateData.put("reportData", reportDataResponse);
         }
-        pivotTableService.generateExcel(data, metadata, task);
-        return dataMap;
+        pivotTableService.generateExcel(emailTemplateData, data, metadata, task);
+        return emailTemplateData;
     }
+
+    public Map<String, Object> getReportEmailProperty(Task task, Metadata metadata, TaskScheduler scheduler, List<DBObject> data, User user) throws Exception {
+        var map = new HashMap<String, Object>();
+
+        map.put("scheduledTriggerTime", getScheduledTriggerTime(scheduler));
+        map.put("reportDate", getReportDate(task));
+        map.put("emailId", user.getEmailId());
+        map.put("taskId", task.getId());
+        map.put("filePath", task.getPath());
+        map.put("generatedDate", new Date());
+
+        var metadataEmailProperties = metadata.getEmailReportProperties();
+        if(metadataEmailProperties != null && !metadataEmailProperties.isEmpty()){
+            map.put("reportName",metadataEmailProperties.get("reportName"));
+            map.put("legends", metadata.getLegends());
+            map.put("subject", metadataEmailProperties.get("subject"));
+            map.put("emailBodyReport", metadataEmailProperties.get("emailBodyReport"));
+            map.put("includeExcelAttachment", metadataEmailProperties.get("includeExcelAttachment"));
+            map.put("attachmentFileName", metadataEmailProperties.get("attachmentFileName"));
+        }
+
+        var taskEmailProp = task.getParams();
+        if (taskEmailProp != null && !taskEmailProp.isEmpty()){
+            map.put("reportName", CommonUtil.getFieldValue("reportName", taskEmailProp, map.get("reportName")));
+            map.put("legends", CommonUtil.getFieldValue("legends", taskEmailProp, map.get("legends")));
+            map.put("subject", CommonUtil.getFieldValue("subject", taskEmailProp, map.get("subject")));
+            map.put("emailBodyReport", CommonUtil.getFieldValue("emailBodyReport", taskEmailProp, map.get("emailBodyReport")));
+            map.put("attachmentFileName", CommonUtil.getFieldValue("attachmentFileName", taskEmailProp, map.get("attachmentFileName")));
+            map.put("includeExcelAttachment", CommonUtil.getFieldValue("includeExcelAttachment", taskEmailProp, map.get("includeExcelAttachment")));
+        }
+
+        var reportDisplayName = (String) CommonUtil.getFieldValue("reportName", map, metadata.getName());
+        map.put("reportDisplayName", reportDisplayName);
+        return map;
+    }
+
+    private String getScheduledTriggerTime(TaskScheduler scheduler) {
+        if(scheduler != null && scheduler.getCronTriggerTime() != null){
+            var expression = scheduler.getCronTriggerTime().split("\\s+");
+            return String.format("%s $s", LocalDateTime.now(Clock.systemDefaultZone())
+                    .withHour(Integer.parseInt(expression[2]))
+                    .withMinute(Integer.parseInt(expression[1]))
+                    .format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm")), scheduler.getCronTimeZone());
+        }
+        return String.format("%s %s", LocalDateTime.now(Clock.systemDefaultZone()).format(DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm")), "IST");
+    }
+
     private void preparePivotEmailTemplateData(Map<String, Object> emailTemplateData, PivotConfig pivotConfig){
         if(pivotConfig.isEnabled() && pivotConfig.getRowGroup() != null && !pivotConfig.getRowGroup().isEmpty() && (pivotConfig.getColumnGroup() == null || pivotConfig.getColumnGroup().isEmpty())){
             emailTemplateData.put("isPivotEnableRowGrouping", true);
+        } else if(!pivotConfig.isEnabled() && pivotConfig.getRowGroup() != null && !pivotConfig.getRowGroup().isEmpty() && (pivotConfig.getColumnGroup() == null || pivotConfig.getColumnGroup().isEmpty())){
+            emailTemplateData.put("isPivotDisableRowGrouping", true);
+        } else if(pivotConfig.isEnabled() && pivotConfig.getRowGroup() != null && !pivotConfig.getRowGroup().isEmpty() && pivotConfig.getColumnGroup() != null && !pivotConfig.getColumnGroup().isEmpty()){
+            emailTemplateData.put("isPivotEnableColumnGrouping", true);
         }
     }
     private String getReportDate(Task task){
@@ -144,7 +184,7 @@ public class EmailReportProcessorService {
         return ftlWriter;
     }
 
-    public void sendEmail(StringWriter content, Map<String, Object> emailTemplateData) {
+    public void sendEmail(StringWriter content, Map<String, Object> emailTemplateData) throws BunicException {
         EmailProperties emailProperties = getEmailReportProperties(emailTemplateData);
         emailProperties.setContent(content);
         emailSender.sendEmail(emailProperties);
@@ -152,12 +192,34 @@ public class EmailReportProcessorService {
 
     private EmailProperties getEmailReportProperties(Map<String, Object> emailTemplateData){
         EmailProperties emailProperties = new EmailProperties();
-        emailProperties.setFrom("bunic.corporation.ltd@gmail.com");
+        emailProperties.setFrom(businessEmailId);
         emailProperties.setMailIds((String) emailTemplateData.get("emailId"));
         emailProperties.setFilePath((String) emailTemplateData.get("filePath"));
         emailProperties.setAttachmentName((String) emailTemplateData.get("attachmentFileName"));
         emailProperties.setSubject((String) emailTemplateData.get("subject"));
-//        emailProperties.setE
+        emailProperties.setHasAttachment((boolean) emailTemplateData.get("includeExcelAttachment"));
         return emailProperties;
+    }
+
+    public void validateGroupReportParams(GroupReport groupReport){
+        if (groupReport == null){
+            throw new IllegalArgumentException("Group report configuration cannot be null");
+        }
+        if (groupReport.getRows() == null || groupReport.getRows().isEmpty()){
+            throw new IllegalArgumentException("Group report rows configuration cannot be null or empty");
+        }
+        var invalidRows = groupReport.getRows().stream().filter(row -> row.getCols().isEmpty() || (row.getCols()
+                        .stream()
+                        .filter(col -> StringUtils.isBlank(col.getReport()))
+                        .toList()
+                        .isEmpty()))
+                .toList();
+        if ( invalidRows.isEmpty()){
+            throw new IllegalArgumentException("Rows and Cols cannot be empty");
+        }
+    }
+
+    public Metadata getMetadataByCode(User user, String reportCode) throws BunicException {
+        return collectionService.getMetadataByCode(user, reportCode);
     }
 }

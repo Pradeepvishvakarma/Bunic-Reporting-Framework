@@ -44,9 +44,10 @@
     ],
     "emailReportProperties": {
       "reportName": "Risk By Portfolio as on 20 Sep 2025",
-      "subject": "BUNIC",
+      "subject": "Risk By Portfolio as on 20 Sep 2025",
       "emailBodyReport": true,
-      "attachmentFileName": "RiskByPortfolio_{timestamp}"
+      "includeExcelAttachment": true,
+      "attachmentFileName": "RiskByPortfolio"
     }
   },
   {
@@ -126,7 +127,46 @@
     ],
     "emailReportProperties": {
       "reportName": "Risk By Portfolio by pradeep kumar vishvakarma as of 20 Sep 2025",
-      "subject": "BUNIC"
+      "subject": "BUNIC",
+      "includeExcelAttachment": true
+    }
+  },
+  {
+    "code": "risk_by_portfolio_group_report",
+    "name": "Risk By Portfolio Group Report",
+    "accessLevel": "REGION_LEVEL",
+    "groupReportEnabled": true,
+    "legends": ["Total Pnl in $K","FXDL in $K"],
+    "groupReport":{
+      "rows" : [
+        {
+          "cols": [
+            {
+              "report": "riskbyportfolio",
+              "config": {
+                "title": "Risk By Portfolio - Report 1"
+              }
+            }
+          ]
+        },
+        {
+          "cols": [
+            {
+              "report": "riskbyportfolio",
+              "config": {
+                "title": "Risk By Portfolio - Report 2"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "emailReportProperties": {
+      "reportName": "Risk By Portfolio Group Report as on 20 Sep 2025",
+      "subject": "Risk By Portfolio Group Report as on 20 Sep 2025",
+      "emailBodyReport": true,
+      "includeExcelAttachment": false,
+      "attachmentFileName": "RiskByPortfolio_group_report"
     }
   }
 ]

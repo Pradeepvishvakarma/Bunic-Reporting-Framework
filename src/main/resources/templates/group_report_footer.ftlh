@@ -1,4 +1,4 @@
-<table width="100%" align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<table width="100%" style="margin:2px 0 10px 20px;" align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
     <tr>
         <td colspan="2" class="content-log">
             For more details login to:
@@ -13,7 +13,7 @@
         <td colspan="2">&nbsp;</td>
     </tr>
     <tr>
-        <td colspan="2" style="border-top:1.0pt solid #383838">&nbsp;</td>
+        <td colspan="2" style="border-top:0.8pt solid #383838">&nbsp;</td>
     </tr>
     <tr>
         <td width="77%" scope="col">
