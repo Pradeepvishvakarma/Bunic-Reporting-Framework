@@ -23,7 +23,7 @@ public class UserService {
     public User getUserByUserId(String userId) {
         var user = userDao.getUserByUserId(userId);
         if (user == null) {
-            LOGGER.info("User not found for userId {}", userId);
+            LOGGER.warn("User not found for userId {}", userId);
         } else {
             LOGGER.info("UserId {} found User {}", userId, user);
         }

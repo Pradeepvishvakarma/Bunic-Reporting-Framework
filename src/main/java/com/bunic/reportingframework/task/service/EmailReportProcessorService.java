@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -100,7 +101,7 @@ public class EmailReportProcessorService {
             throw new RuntimeException("Task manager - email runner - problem on prepare email report data " + e.getMessage());
         }
 
-        var emailTemplateData = getReportEmailProperty(task, metadata, null, data, user);
+        var emailTemplateData = getReportEmailProperty(task, metadata, null, user);
 
         if(pivotConfig != null){
             emailTemplateData.put("isNonPivotReport", true);
@@ -114,7 +115,7 @@ public class EmailReportProcessorService {
         return emailTemplateData;
     }
 
-    public Map<String, Object> getReportEmailProperty(Task task, Metadata metadata, TaskScheduler scheduler, List<DBObject> data, User user) throws Exception {
+    public Map<String, Object> getReportEmailProperty(Task task, Metadata metadata, TaskScheduler scheduler, User user){
         var map = new HashMap<String, Object>();
 
         map.put("scheduledTriggerTime", getScheduledTriggerTime(scheduler));

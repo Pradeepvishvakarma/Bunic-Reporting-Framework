@@ -5,6 +5,8 @@ import com.bunic.reportingframework.collection.model.Filter;
 import com.bunic.reportingframework.collection.model.GroupColumn;
 import com.bunic.reportingframework.collection.model.Metadata;
 import com.bunic.reportingframework.common.util.CommonUtil;
+import com.bunic.reportingframework.exception.BunicException;
+import com.bunic.reportingframework.exception.BunicRuntimeException;
 import com.bunic.reportingframework.task.model.Task;
 import com.bunic.reportingframework.task.model.TaskStatus;
 import com.bunic.reportingframework.task.model.TaskType;
@@ -112,7 +114,7 @@ public class EmailReportTaskRunner {
             groupReportContent.put(i, htmlReports);
         }
 
-        var groupReportEmailProps = emailReportProcessorService.getReportEmailProperty(task, metadata, null, null, user);
+        var groupReportEmailProps = emailReportProcessorService.getReportEmailProperty(task, metadata, null, user);
         groupReportEmailProps.put("groupReportContent", groupReportContent);
         String emailTemplate = (String) CommonUtil.getFieldValue("emailTemplate", metadata.getEmailReportProperties(), "group_report_template.ftlh");
         StringWriter htmlGroupReport = emailReportProcessorService.prepareReportHtml(emailTemplate, groupReportEmailProps);
@@ -150,7 +152,7 @@ public class EmailReportTaskRunner {
         return emailTemplate;
     }
 
-    private List<DBObject> getData(Metadata metadata, Task task) {
+    private List<DBObject> getData(Metadata metadata, Task task) throws BunicRuntimeException {
         return collectionDao.getData(metadata, task);
     }
 
@@ -180,7 +182,7 @@ public class EmailReportTaskRunner {
         }
     }
 
-    private String createTaskLocation(String taskId) {
+    private String createTaskLocation(String taskId) throws BunicRuntimeException {
         String reportFolderPath = "";
         if (StringUtils.isBlank(taskId)) {
             throw new RuntimeException("Task manager - task runner - TaskId cannot be null");
@@ -204,7 +206,7 @@ public class EmailReportTaskRunner {
                 int toIndex = reportFolderPath.lastIndexOf(FILE_SAPERATOR);
                 LOGGER.info("Task manager - task runner - Created report folder path: {}", reportFolderPath);
             } catch (Exception e) {
-                throw new RuntimeException("Task manager - task runner - Problem to create report folder path " + e.getMessage());
+                throw new BunicRuntimeException("Task manager - task runner - Problem to create report folder path " + e.getMessage(), e);
             }
         }
         return reportFolderPath;
