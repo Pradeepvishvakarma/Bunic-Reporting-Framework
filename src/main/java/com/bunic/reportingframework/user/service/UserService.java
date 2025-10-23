@@ -21,7 +21,7 @@ public class UserService {
     private UserDao userDao;
 
     public User getUserByUserId(String userId) {
-        var user = userDao.getUser(userId);
+        var user = userDao.getUserByUserId(userId);
         if (user == null) {
             LOGGER.info("User not found for userId {}", userId);
         } else {
@@ -66,11 +66,11 @@ public class UserService {
 
 
     public List<User> getAllUsers() {
-        return userDao.findAllUsers();
+        return userDao.getUsers();
     }
 
     public Optional<User> getUserById(String userId) {
-        return Optional.of(userDao.getUser(userId));
+        return Optional.of(userDao.getUserByUserId(userId));
     }
 
 //    public String updateUser(String id, User updatedUser) {
@@ -87,7 +87,7 @@ public class UserService {
 //    }
 
     public String deleteUser(String userId) {
-        if (userDao.getUser(userId) != null) {
+        if (userDao.getUserByUserId(userId) != null) {
             return "User not found!";
         }
         userDao.deleteUserByUserId(userId);

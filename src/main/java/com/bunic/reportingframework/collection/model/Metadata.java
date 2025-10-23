@@ -16,9 +16,12 @@ public class Metadata {
 	private String description;
     private Store store;
     private PivotConfig pivotConfig;
+    private List<String> users;
     private List<Column> columns;
     private List<String> legends;
     private String accessLevel;
+    private boolean isGroupReportEnabled;
+    private GroupReport groupReport;
     private Map<String, Object> emailReportProperties;
 
     @Override
@@ -28,6 +31,7 @@ public class Metadata {
         sb.append(", code:'").append(code).append('\'');
         sb.append(", description:'").append(description).append('\'');
         sb.append(", pivotConfig:'").append(pivotConfig).append('\'');
+        sb.append(", users:'").append(users).append('\'');
         sb.append(", columns:'").append(columns).append('\'');
         sb.append(", legends:'").append(legends).append('\'');
         sb.append(", emailReportProperties:'").append(emailReportProperties).append('\'');

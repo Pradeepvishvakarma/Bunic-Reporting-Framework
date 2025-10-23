@@ -29,7 +29,7 @@ public class PivotTableService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PivotTableService.class);
 
-    public ReportDataResponse getReportDataResponse(Metadata metadata, Task task, PivotConfig pivotConfig, List<DBObject> data){
+    public ReportDataResponse getReportDataResponse(Metadata metadata, PivotConfig pivotConfig, List<DBObject> data){
         if(pivotConfig != null){
             return getPivotDataResponse(data, pivotConfig, metadata);
         } else {
@@ -46,7 +46,35 @@ public class PivotTableService {
         var pivotTableContext = new PivotTableContext(data, columns, pivotConfig);
         var pivotData = applyPivoting(pivotTableContext);
         reportDataResponse.setPivotedData(pivotData);
+
+        if(pivotTableContext.isColumnGrouping()) {
+            var columnGroupKeysObject = getColumnGroupKeys(pivotTableContext, pivotTableContext.getColumnGroup());
+            reportDataResponse.setColumnGroupKeys(columnGroupKeysObject);
+        }
+
+        GrandTotal grandTotal =  null;
+        if(!pivotTableContext.isPivotDisableRowGrouping()){
+            grandTotal = calculatePivotDataGrandTotal(pivotTableContext, pivotData);
+        }
+        reportDataResponse.setGrandTotal(grandTotal);
+
         return reportDataResponse;
+    }
+
+    private GrandTotal calculatePivotDataGrandTotal(PivotTableContext pivotTableContext, List<PivotData> pivotData) {
+        return null;
+    }
+
+    private LinkedHashSet<String> getColumnGroupKeys(PivotTableContext context, List<String> columnGroup) {
+        return groupBy(context.getDbObjects(), context, columnGroup).keySet().stream()
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private Map<String, List<DBObject>> groupBy(List<DBObject> dbObjects, PivotTableContext context, List<String> groupingBy){
+        return dbObjects.stream().sorted(sort(context, groupingBy))
+                .collect(Collectors.groupingBy(dbObject -> groupingBy.stream()
+                        .map(groupBy -> (String) dbObject.get(groupBy)).collect(Collectors.joining("~")), LinkedHashMap::new, Collectors.toList()));
+
     }
 
     private List<PivotData> applyPivoting(PivotTableContext context) {
@@ -62,11 +90,14 @@ public class PivotTableService {
                 pivotedData.setId(key);
                 pivotedData.setLevel(groupingBy.size());
                 var groupByRow = groupingBy(context.getDbObjects(), context, groupingBy);
-
-                if(context.isColumnGrouping()){
-
+                if (context.isColumnGrouping()){
+                    var columnGroupValues = getColumnGroupValues(context, groupingBy);
+                    pivotedData.setColumnGroupValues(columnGroupValues.get(key));
+                    pivotedData.setBreachDetailsByLevel(BREACH_STRING_FORMAT_DEFAULT);
                 } else if (context.isPivotDisableRowGrouping()) {
-
+                    var groupedRows = getPivotDisabledRowGroupValues(key, context);
+                    pivotedData.setPivotDisableRowGroupValues(getRowGroupedValue(groupedRows, context));
+                    pivotedData.setBreachDetailsByLevel(BREACH_STRING_FORMAT_DEFAULT);
                 } else {
                     var rowGroupValues = getRowGroupValues(context, groupingBy);
                     pivotedData.setRowGroupValues(rowGroupValues.get(key));
@@ -79,6 +110,50 @@ public class PivotTableService {
 
         }
         return pivotDataList;
+    }
+
+    private List<NonPivotData> getRowGroupedValue(Map<String, List<DBObject>> pivotDisableRowGroupValues, PivotTableContext context) {
+        var pivotDataList = new ArrayList<NonPivotData>();
+        var nonPivotDataList = pivotDisableRowGroupValues.entrySet().stream().map(Map.Entry::getValue).findFirst();
+        if(nonPivotDataList.isEmpty()){
+            return Collections.emptyList();
+        }
+        var data = new ArrayList<>(nonPivotDataList.get());
+        data.sort(getColumnComparator(context));
+
+        data.stream().map(dbObject ->  {
+            var nonPivotData = new NonPivotData();
+            nonPivotData.setValues(dbObject);
+            nonPivotData.setBreachDetails(calculateBreachDetails(dbObject, context.getColumns()));
+            return nonPivotData;
+        }).forEach(pivotDataList::add);
+        return pivotDataList;
+    }
+
+    private Comparator<DBObject> getColumnComparator(PivotTableContext context) {
+        var stringColumns = getColumnByType(context.getColumns(), "string");
+        if(stringColumns.isEmpty()){
+            return (obj1, obj2) -> 0;
+        }
+        var comparator = Comparator.nullsFirst(sortBy(context, stringColumns.get(0).getField()));
+        for (int i = 1; i < stringColumns.size(); i++) {
+            comparator = comparator.thenComparing(sortBy(context, stringColumns.get(i).getField()));
+        }
+        return comparator;
+    }
+
+    private Map<String, List<DBObject>> getPivotDisabledRowGroupValues(String key, PivotTableContext context) {
+        return groupBy(context.getDbObjects(), context, context.getRowGroup()).entrySet().stream()
+                .filter(entry -> StringUtils.equals(entry.getKey(), key))
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> getFormattedData(entry.getValue(), context.getColumns()),
+                        (x,y) -> y, LinkedHashMap::new));
+    }
+
+    private Map<String, Map<String, Map<String , BigDecimal>>> getColumnGroupValues(PivotTableContext context, List<String> groupingBy) {
+        return groupBy(context.getDbObjects(), context, groupingBy).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, x-> groupBy(x.getValue(), context, context.getColumnGroup()).entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, y -> getNumberValuesToUpdate(y.getValue(), context),
+                                (p, q) ->q, LinkedHashMap::new)), (p, q) -> q, LinkedHashMap::new));
     }
 
     private Map<String, String> calculateRowGroupingBreachStatus(Map<String, BigDecimal> rowGroupValues, PivotTableContext context) {
@@ -167,7 +242,7 @@ public class PivotTableService {
         var columns = metadata.getColumns().stream().filter(column -> !column.isHidden()).toList();
         reportDataResponse.setColumns(columns);
 
-        var formattedData = getFormattedData(data, metadata);
+        var formattedData = getFormattedData(data, metadata.getColumns());
 
         var NonPivotData = getNonPivotData(formattedData, metadata);
         reportDataResponse.setNonPivotedData(NonPivotData);
@@ -177,8 +252,8 @@ public class PivotTableService {
         return reportDataResponse;
     }
 
-    private List<DBObject> getFormattedData(List<DBObject> data, Metadata metadata) {
-        metadata.getColumns().stream().filter(column -> column != null && column.getType().equalsIgnoreCase(TYPE_NUMBER))
+    private List<DBObject> getFormattedData(List<DBObject> data, List<Column> columns) {
+        columns.stream().filter(column -> column != null && column.getType().equalsIgnoreCase(TYPE_NUMBER))
                 .forEach(column -> data.stream().forEach(dbObject -> {
                     if (dbObject.containsField(column.getField()) && dbObject.get(column.getField()) != null) {
                         var value = new BigDecimal(dbObject.get(column.getField()).toString());
@@ -194,15 +269,15 @@ public class PivotTableService {
         for (var dbObject : data) {
             var nonPivotData = new NonPivotData();
             nonPivotData.setValues(dbObject);
-            nonPivotData.setBreachDetails(calculateBreachDetails(dbObject, metadata));
+            nonPivotData.setBreachDetails(calculateBreachDetails(dbObject, metadata.getColumns()));
             nonPivotDataList.add(nonPivotData);
         }
         return nonPivotDataList;
     }
 
-    private Map<String, String> calculateBreachDetails(DBObject dbObject, Metadata metadata) {
+    private Map<String, String> calculateBreachDetails(DBObject dbObject, List<Column> columns) {
         var breachDetails = new HashMap<String, String>();
-        metadata.getColumns().stream().filter(column -> column.getNumberFormat() != null
+        columns.stream().filter(column -> column.getNumberFormat() != null
                         && column.getNumberFormat().getRule() != null)
                 .forEach(column -> {
                     var numberFormat = column.getNumberFormat();
@@ -247,10 +322,10 @@ public class PivotTableService {
         return BREACH_NUMBER_FORMAT_DEFAULT;
     }
 
-    public void generateExcel(List<DBObject> data, Metadata metadata, Task task) throws Exception {
+    public void generateExcel(Map<String, Object> emailTemplateData, List<DBObject> data, Metadata metadata, Task task) throws Exception {
         var path = task.getPath();
         System.out.println("path: " + path);
-        String excelFilePath = String.format("%s%s", path,"output.xlsx");
+        String excelFilePath = String.format("%s%s%s", path, emailTemplateData.get("attachmentFileName"),".xlsx");
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Data");
 

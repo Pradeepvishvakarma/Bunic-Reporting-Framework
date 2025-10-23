@@ -21,7 +21,7 @@ public class UserDao {
     @Qualifier("primaryTemplate")
     private MongoTemplate primaryTemplate;
 
-    public User getUser(String userId){
+    public User getUserByUserId(String userId){
         LOGGER.info("fetch userId {} from db", userId);
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
@@ -40,7 +40,7 @@ public class UserDao {
         primaryTemplate.remove(query, COLLECTION_USERS);
     }
 
-    public List<User> findAllUsers(){
+    public List<User> getUsers(){
         LOGGER.info("fetch all users from db");
         var ss = primaryTemplate.findAll(User.class, COLLECTION_USERS);
         System.out.println("user list "+ss);

@@ -30,6 +30,7 @@ public class PivotTableContext {
         this.columns = columns.stream().filter(Objects::nonNull).toList();
         this.rowGroup = pivotConfig != null && pivotConfig.getRowGroup() != null && !pivotConfig.getRowGroup().isEmpty() ? pivotConfig.getRowGroup() : Collections.emptyList();
         this.columnGroup = isPivotEnabled && pivotConfig.getColumnGroup() != null && !pivotConfig.getColumnGroup().isEmpty() ? pivotConfig.getColumnGroup() : Collections.emptyList();
-        this.isPivotDisableRowGrouping = pivotConfig != null && !pivotConfig.isEnabled()  &&  !rowGroup.isEmpty() && pivotConfig.getColumnGroup().isEmpty();
+        this.isColumnGrouping = !this.columnGroup.isEmpty();
+        this.isPivotDisableRowGrouping = pivotConfig != null && !pivotConfig.isEnabled() && !rowGroup.isEmpty() && (pivotConfig.getColumnGroup() == null || pivotConfig.getColumnGroup().isEmpty());
     }
 }

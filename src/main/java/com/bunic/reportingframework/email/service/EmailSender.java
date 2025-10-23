@@ -1,6 +1,8 @@
 package com.bunic.reportingframework.email.service;
 
 import com.bunic.reportingframework.email.model.EmailProperties;
+import com.bunic.reportingframework.exception.BunicException;
+import com.bunic.reportingframework.exception.BunicRuntimeException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +19,13 @@ public class EmailSender {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailSender.class);
 
-//    @Value()
-    private String from;
-
     @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendEmail(EmailProperties emailProperties) {
+    public void sendEmail(EmailProperties emailProperties) throws BunicException {
         if ( emailProperties != null && emailProperties.getMailIds() != null) {
             try {
                 LOGGER.info("Email runner - start composing email for requested excel report");
@@ -36,7 +35,7 @@ public class EmailSender {
                 setAddresses(emailProperties, helper);
                 mailSender.send(msg);
             } catch (Exception e) {
-                throw new RuntimeException("Email runner - problem on send email report " + e.getMessage(), e);
+                throw new BunicRuntimeException("Email runner - problem on send email report "+ e.getMessage(), e);
             }
         }
     }
@@ -47,16 +46,17 @@ public class EmailSender {
         helper.setSubject(emailProperties.getSubject());
         helper.setText(String.valueOf(emailProperties.getContent()), true);
 
-        var newPath = String.format("%s%s", emailProperties.getFilePath(), "abc.eml");
-        var newExcelPath = String.format("%s%s", emailProperties.getFilePath(), "output.xlsx");
-        helper.addAttachment(String.format("%s%s",emailProperties.getAttachmentName(),".xlsx"), new File(newExcelPath));
-        // Save the email as .eml file
-        String emlPath = emailProperties.getFilePath(); // Add this property to EmailProperties
+        var newPath = String.format("%s%s%s", emailProperties.getFilePath(), emailProperties.getAttachmentName(), ".eml");
+        if (emailProperties.isHasAttachment()){
+            var newExcelPath = String.format("%s%s%s", emailProperties.getFilePath(), emailProperties.getAttachmentName(), ".xlsx");
+            helper.addAttachment(String.format("%s%s",emailProperties.getAttachmentName(),".xlsx"), new File(newExcelPath));
+        }
+
         MimeMessage mimeMessage = helper.getMimeMessage();
         try (java.io.FileOutputStream fos = new java.io.FileOutputStream(newPath)) {
             mimeMessage.writeTo(fos);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new BunicRuntimeException("Email runner - problem on composing email file"+ e.getMessage(), e);
         }
     }
 }

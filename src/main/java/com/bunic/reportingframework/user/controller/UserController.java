@@ -46,7 +46,7 @@ public class UserController {
 
     @GetMapping("/delete/{id}")
     @Operation(summary = "get user by userId")
-    public void deleteUser(@PathVariable String userId) {
-        userService.deleteUser(userId);
+    public String deleteUser(@PathVariable String userId) {
+        return userService.deleteUser(userId);
     }
 }
