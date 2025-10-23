@@ -375,8 +375,6 @@ public class PivotTableService {
         try (FileOutputStream fos = new FileOutputStream(excelFilePath)) {
             workbook.write(fos);
         }
-
         workbook.close();
     }
-
 }

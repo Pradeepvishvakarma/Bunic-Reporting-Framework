@@ -1,5 +1,6 @@
 package com.bunic.reportingframework.task.service;
 
+import com.bunic.reportingframework.exception.BunicInvalidConfigurationException;
 import com.bunic.reportingframework.task.dao.TaskManagerDao;
 import com.bunic.reportingframework.task.dto.TaskDto;
 import com.bunic.reportingframework.task.model.Task;
@@ -74,7 +75,7 @@ public class TaskManagerService {
 
     private void schedule(Task task) throws Exception {
         if(null == task){
-            throw new IllegalArgumentException("Task to schedule cannot be null");
+            throw new BunicInvalidConfigurationException("Task to schedule cannot be null");
         }
         LOGGER.info("Task manager publishing task {}", task);
         sendMessage(task);
@@ -86,11 +87,9 @@ public class TaskManagerService {
         if(TaskType.EMAIL_REPORT.equals(task.getType())){
             future = emailTaskKafkaTemplate.send("bunic-email-topic-test", task.getId(), task);
         } else {
-
-            throw new IllegalArgumentException("Task type is Invalid");
+            throw new BunicInvalidConfigurationException("Task type is Invalid");
         }
         LOGGER.info("Task Manager Service - sendMessage task {} completed", task);
-
         future.whenComplete((result, ex) -> {
             if(null == ex){
                 LOGGER.info("Task manager published message {}", task);

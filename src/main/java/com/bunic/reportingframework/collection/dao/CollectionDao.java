@@ -1,6 +1,7 @@
 package com.bunic.reportingframework.collection.dao;
 
 import com.bunic.reportingframework.collection.model.Metadata;
+import com.bunic.reportingframework.exception.BunicRuntimeException;
 import com.bunic.reportingframework.task.model.Task;
 import com.bunic.reportingframework.user.service.UserService;
 import com.mongodb.BasicDBObject;
@@ -46,7 +47,7 @@ public class CollectionDao {
         }
     }
 
-    public List<DBObject> getData(Metadata metadata, Task task) {
+    public List<DBObject> getData(Metadata metadata, Task task) throws BunicRuntimeException {
         try {
             Aggregation aggregation = Aggregation.newAggregation(getPipeLine(metadata).stream()
                     .map(stage -> (AggregationOperation) context -> stage)
@@ -58,7 +59,7 @@ public class CollectionDao {
                     .toList();
             return filterData(data, metadata, task);
         } catch (Exception e){
-            throw  new RuntimeException(String.format("Invalid pipeline configure for report %s ", metadata.getName()));
+            throw new BunicRuntimeException(String.format("Invalid pipeline configure for report %s ", metadata.getName()), e);
         }
     }
 
