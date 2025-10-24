@@ -22,6 +22,8 @@ public class User {
     private String lastName;
     private String emailId;
     private String accessLevel;
+    private String password;
+    private String userType;
     private Map<String, List<String>> entitlementAccess;
     private List<String> regionAccess;
     private List<String> deskAccess;
@@ -33,7 +35,10 @@ public class User {
         sb.append(", First Name='").append(firstName).append('\'');
         sb.append(", Last Name='").append(lastName).append('\'');
         sb.append(", emailId='").append(emailId).append('\'');
+        sb.append(", usertype='").append(userType).append('\'');
         sb.append(", accessLevel='").append(accessLevel).append('\'');
+        sb.append(", regionAccess='").append(regionAccess).append('\'');
+        sb.append(", deskAccess='").append(deskAccess).append('\'');
         sb.append(", entitlementAccess=").append(entitlementAccess);
         sb.append('}');
         return sb.toString();

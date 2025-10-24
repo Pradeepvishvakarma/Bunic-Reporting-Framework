@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Onboarding</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            padding: 0px;
+        }
+        .login-form {
+            background: white;
+            padding: 35px;
+            max-width: 700px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input, button, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/header-footer.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="login-form">
+    <h2>Enter Credentials</h2>
+    &nbsp;&nbsp;
+    <form th:action="${isAdmin == 'ADMIN'} ? @{/admin-profile} : @{/update-profile}" th:object="${user}" method="post">
+
+        <label>User Id</label>
+        <input type="text" th:field="*{userId}" placeholder="Enter your user id" required>
+
+        <label>Password</label>
+        <input type="password" th:field="*{password}" placeholder="Enter your password" required>
+        <button type="submit">Login</button>
+
+
+        <th:block th:if="${status == 'COMPLETED'}">
+            <p style="color: green; " th:text="${message}"></p>
+        </th:block>
+        <th:block th:if="${status == 'FAILED'}">
+            <p style="color: red;" th:text="${message}"></p>
+        </th:block>
+    </form>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- JS Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+</body>
+</html>

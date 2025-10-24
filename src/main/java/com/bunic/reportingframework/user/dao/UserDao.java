@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,8 +50,35 @@ public class UserDao {
 
     public List<User> getUsers(){
         LOGGER.info("fetch all users from db");
-        var ss = primaryTemplate.findAll(User.class, COLLECTION_USERS);
-        System.out.println("user list "+ss);
-        return ss;
+        return primaryTemplate.findAll(User.class, COLLECTION_USERS);
+    }
+
+    public User getUserByUserIdAndPassword(String userId, String password) {
+        LOGGER.info("fetch user by userId: {}, password: {} from db", userId, password);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userId").is(userId).and("password").is(password));
+        return primaryTemplate.findOne(query, User.class, COLLECTION_USERS);
+    }
+
+    public User getUserByUserType(String userType) {
+        LOGGER.info("fetch user by userType: {} from db", userType);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userType").is(userType));
+        return primaryTemplate.findOne(query, User.class, COLLECTION_USERS);
+    }
+
+    public List<User> getAdminUsers() {
+        LOGGER.info("fetch All admin users from db");
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userType").is("ADMIN"));
+        return primaryTemplate.find(query, User.class, COLLECTION_USERS);
+    }
+
+    public void updateUserTypeByUserId(String userId, User user) {
+        String newAccessType = "ADMIN".equals(user.getUserType()) ? "USER" : "ADMIN";
+        Update update = new Update().set("userType", newAccessType);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userId").is(userId));
+        primaryTemplate.updateFirst(query, update, User.class, COLLECTION_USERS);
     }
 }
