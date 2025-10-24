@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>User Onboarding</title>
+    <title>Edit User</title>
     <style>
         body {
             font-family: Arial;
             background: #f4f6f9;
-            padding: 0px;
+            padding: 0;
         }
-        .onboarding-form {
+        .edit-form {
             background: white;
             padding: 35px;
             max-width: 700px;
@@ -29,21 +29,37 @@
             color: white;
             font-weight: bold;
         }
+        input-field{
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        input[readonly] {
+            background-color: #e9ecef;  /* light grey background */
+            color: #6c757d;             /* grey text */
+            cursor: not-allowed;        /* show lock cursor */
+        }
     </style>
-
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/header-footer.css}">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
 
 <div th:replace="~{fragments/header :: header}"></div>
 
-<div class="onboarding-form">
-    <h2>Welcome! Enter User Details</h2>
+<div class="edit-form">
+    <th:block th:if="${UserUpdateVia != 'ADMIN'}">
+        <h2 style="color:blue; text-align: center;">Welcome, <span th:text="${userName}"></span></h2>
+    </th:block>
     &nbsp;&nbsp;
-    <form th:action="@{/onboarding}" th:object="${user}" method="post">
+    <h2>Update User Details</h2>
+    &nbsp;&nbsp;
+    <form th:action="@{/update-profile/update}" th:object="${user}" method="post">
+
+        <label>User Id</label>
+        <input type="text" th:field="*{userId}" placeholder="Enter your user id" readonly class="input-field">
 
         <label>First Name</label>
         <input type="text" th:field="*{firstName}" placeholder="Enter your first name" required>
@@ -51,23 +67,23 @@
         <label>Last Name</label>
         <input type="text" th:field="*{lastName}" placeholder="Enter your last name" required>
 
-        <label>Email</label>
-        <input type="email" th:field="*{emailId}" placeholder="Enter your emailId" required>
-
         <label>Password</label>
         <input type="password" th:field="*{password}" placeholder="Enter your password" required>
+
+        <label>Email</label>
+        <input type="email" th:field="*{emailId}" placeholder="Enter your emailId" required>
 
         <label for="accessLevel">Access Level:</label>
         <select th:field="*{accessLevel}" id="accessLevel" required>
             <option value="">--Select--</option>
             <option value="GLOBAL">Global</option>
             <option value="REGION">Region</option>
-            <option value="DESK">Country</option>
+            <option value="COUNTRY">Country</option>
         </select>
 
         <!-- REGION Multi-select -->
         <div id="regionContainer" class="mb-3" style="display:none;">
-            <label for="regionAccess" class="form-label fw-bold">Select Region(s)</label>
+            <label for="regionAccess">Select Region(s)</label>
             <select th:field="*{regionAccess}" id="regionAccess" multiple="multiple" style="width:100%">
                 <option value="ASIA">ASIA</option>
                 <option value="EMEA">EMEA</option>
@@ -78,7 +94,7 @@
 
         <!-- COUNTRY Multi-select -->
         <div id="countryContainer" class="mb-3" style="display:none;">
-            <label for="deskAccess" class="form-label fw-bold">Select Country(ies)</label>
+            <label for="deskAccess">Select Country(ies)</label>
             <select th:field="*{deskAccess}" id="deskAccess" multiple="multiple" style="width:100%">
                 <option value="INDIA">India</option>
                 <option value="JAPAN">Japan</option>
@@ -87,40 +103,45 @@
             </select>
         </div>
 
-        <button type="submit">Create Account</button>
+        <th:block th:if="${status == 'COMPLETED'}">
+            <p style="color: green; " th:text="${message}"></p>
+        </th:block>
+        <th:block th:if="${status == 'FAILED'}">
+            <p style="color: red;" th:text="${message}"></p>
+        </th:block>
+
+        <button type="submit">Update User</button>
     </form>
 </div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<!-- JS Libraries -->
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
     $(document).ready(function() {
-        // Initialize Select2 for multi-selects
-        $('#regionAccess').select2({
-            placeholder: "Select region(s)"
-        });
-        $('#deskAccess').select2({
-            placeholder: "Select country(ies)"
-        });
+        // Initialize Select2
+        $('#regionAccess, #deskAccess').select2();
 
         const accessLevelSelect = document.getElementById("accessLevel");
         const regionContainer = document.getElementById("regionContainer");
         const countryContainer = document.getElementById("countryContainer");
 
-        // Show/hide multi-selects based on accessLevel
-        accessLevelSelect.addEventListener("change", function () {
+        function toggleFields(selected) {
             regionContainer.style.display = "none";
             countryContainer.style.display = "none";
+            if (selected === "REGION") regionContainer.style.display = "block";
+            if (selected === "COUNTRY") countryContainer.style.display = "block";
+        }
 
-            if (this.value === "REGION") {
-                regionContainer.style.display = "block";
-            } else if (this.value === "DESK") {
-                countryContainer.style.display = "block";
-            }
+        // Run once on load (pre-filled user)
+        toggleFields(accessLevelSelect.value);
+
+        // Change event
+        accessLevelSelect.addEventListener("change", function () {
+            toggleFields(this.value);
         });
     });
 </script>

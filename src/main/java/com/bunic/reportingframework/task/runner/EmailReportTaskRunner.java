@@ -79,7 +79,7 @@ public class EmailReportTaskRunner {
 
     private void prepareAndSendReport(Metadata metadata, Task task, User user) throws Exception {
         task.setPath(createTaskLocation(task.getId()));
-        var data = getData(metadata, task);
+        var data = getData(metadata, task, user);
         var emailTemplateData = emailReportProcessorService.getEmailTemplateData(task, metadata, data, user);
         var emailTemplate = getEmailTemplate(metadata);
         StringWriter htmlReport = emailReportProcessorService.prepareReportHtml(emailTemplate, emailTemplateData);
@@ -101,7 +101,7 @@ public class EmailReportTaskRunner {
 
             for (GroupColumn col : rows.get(i).getCols()){
                 var childReportMetadata = emailReportProcessorService.getMetadataByCode(user, col.getReport());
-                var data = getData(childReportMetadata, task);
+                var data = getData(childReportMetadata, task, user);
                 var collReportData = emailReportProcessorService.getEmailTemplateData(task, childReportMetadata, data, user);
                 var collEmailTemplate = getEmailTemplate(childReportMetadata, collReportData, col);
                 updateReportWidth(col, collReportData);
@@ -152,8 +152,8 @@ public class EmailReportTaskRunner {
         return emailTemplate;
     }
 
-    private List<DBObject> getData(Metadata metadata, Task task) throws BunicRuntimeException {
-        return collectionDao.getData(metadata, task);
+    private List<DBObject> getData(Metadata metadata, Task task, User user) throws BunicRuntimeException {
+        return collectionDao.getData(metadata, task, user);
     }
 
     private void validateTask(Task task, Map<String, String> errors) throws IOException {

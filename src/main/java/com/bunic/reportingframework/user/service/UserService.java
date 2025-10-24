@@ -25,7 +25,7 @@ public class UserService {
     private UserDao userDao;
 
     public User getUserByUserId(String userId) {
-        var user = userDao.getUserByUserId(userId);
+        var user = userDao.getUserByUserId(userId.toUpperCase());
         if (user == null) {
             LOGGER.warn("User not found for userId {}", userId);
         } else {
@@ -33,6 +33,29 @@ public class UserService {
         }
         return user;
     }
+
+    public boolean isUserAvailable(String userId, String password) {
+        var user = userDao.getUserByUserIdAndPassword(userId.toUpperCase(), password);
+        if (user == null) {
+            LOGGER.warn("User not found for userId: {} and provided password: {}", userId, password);
+            return false;
+        } else {
+            LOGGER.info("UserId: {} found User: {}", userId, user);
+            return true;
+        }
+    }
+
+    public User getUser(String userId, String password) {
+        var user = userDao.getUserByUserIdAndPassword(userId.toUpperCase(), password);
+        if (user == null) {
+            LOGGER.warn("User not found for userId: {} and provided password: {}", userId, password);
+        } else {
+            LOGGER.info("UserId: {} found User: {}", userId, user);
+        }
+        return user;
+    }
+
+
 
     public String registerUser(User user){
         var validationParams = validateUser(user, false);
@@ -77,23 +100,7 @@ public class UserService {
         return Optional.of(userDao.getUserByUserId(userId));
     }
 
-//    public String updateUser(String id, User updatedUser) {
-//        return userRepository.findById(id).map(existing -> {
-//            existing.setFullName(updatedUser.getFullName());
-//            existing.setEmail(updatedUser.getEmail());
-//            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-//                existing.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
-//            }
-//            existing.setRole(updatedUser.getRole());
-//            userRepository.save(existing);
-//            return "User updated successfully!";
-//        }).orElse("User not found!");
-//    }
-
     public String deleteUser(String userId) {
-        if (userDao.getUserByUserId(userId) != null) {
-            return "User not found!";
-        }
         userDao.deleteUserByUserId(userId);
         return "User deleted successfully!";
     }
@@ -108,8 +115,11 @@ public class UserService {
         } else {
             user.setUserId(createUserId(user));
         }
-        if(user.getAccessLevel() != null){
+        if(user.getAccessLevel() == null){
             user.setAccessLevel("GLOBAL");
+        }
+        if(user.getUserType() == null){
+            user.setUserType("USER");
         }
         userDao.saveUser(user);
         message.setMessage(String.format(THREE_STRING,"Welcome aboard, ", getUserName(user), "!"));
@@ -127,5 +137,34 @@ public class UserService {
         var lastNamePart = user.getLastName().substring(0,1).toUpperCase();
         var randomNumber = (int)(Math.random() * 99999);
         return firstNamePart + lastNamePart + randomNumber;
+    }
+
+    public void updateUserDetails(User existingUser, User newUserDetails) {
+        newUserDetails.setUserId(newUserDetails.getUserId().toUpperCase());
+        newUserDetails.setUserType(existingUser.getUserType() == null ? "USER" : existingUser.getUserType());
+        newUserDetails.setAccessLevel(existingUser.getAccessLevel() == null ? "GLOBAL" : existingUser.getAccessLevel());
+        userDao.deleteUserByUserId(existingUser.getUserId());
+        userDao.saveUser(newUserDetails);
+    }
+
+    public boolean isAdminUser(String userId) {
+        return false;
+    }
+
+    public User getAdminUser() {
+        var adminUser = userDao.getUserByUserType("ADMIN");
+        if (adminUser == null) {
+            LOGGER.warn("Admin User not found");
+        } else {
+            LOGGER.info("Found Admin User: {}", adminUser);
+        }
+        return adminUser;
+    }
+
+    public void toggleAdminAccess(String userId) {
+        User user = getUserByUserId(userId);
+        if (user != null) {
+            userDao.updateUserTypeByUserId(userId, user);
+        }
     }
 }
