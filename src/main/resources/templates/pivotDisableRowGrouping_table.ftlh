@@ -1,6 +1,6 @@
 <table <#if width??>style="width:${width};"</#if> align="left" class="contact-data" role="presentation">
     <thead>
-        <#if emailBodyReport == true>
+        <#if emailBodyReport?? && emailBodyReport == true>
             <tr class="content colr">
                 <th scope="col">
                     <#if pivotedReportData?? && pivotedReportData.pivotedData?? && pivotedReportData.pivotedData?has_content && pivotedReportData.columns??>

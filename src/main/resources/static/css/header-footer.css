@@ -1,0 +1,122 @@
+/* ===== Base / Reset ===== */
+:root {
+    --brand: #004aad;
+    --brand-dark: #002b5c;
+    --bg: #f4f7fb;
+    --text: #1f2937;
+    --white: #fff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+html, body {
+    height: 100%;
+}
+
+/* ===== Sticky Footer Layout (Wrapper) ===== */
+.page {
+    min-height: 100vh;          /* take full viewport height */
+    display: flex;              /* vertical stack */
+    flex-direction: column;
+    background: var(--bg);
+}
+
+/* Main should grow to fill space and push footer down */
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+/* ===== Header ===== */
+.main-header {
+    background: var(--brand);
+    color: var(--white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.main-header .logo h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.main-header .portal-logo h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: 16px;
+}
+
+.nav-links a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.25s ease;
+}
+
+.nav-links a:hover {
+    background: rgba(255,255,255,0.18);
+}
+
+.logout-btn {
+    background: var(--white);
+    color: var(--brand);
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.25s ease, color 0.25s ease;
+}
+.logout-btn:hover {
+    background: #dbe7ff;
+    color: var(--brand-dark);
+}
+
+/* ===== Footer (appearance only) ===== */
+.main-footer {
+    background: var(--brand-dark);
+    color: var(--white);
+    text-align: center;
+    padding: 16px 10px;
+    font-size: 0.95rem;
+    /* Fallback in case <main> is missing */
+    margin-top: auto;  /* ensures footer goes to bottom in flex column */
+}
+
+.main-footer a {
+    color: var(--white);
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: 500;
+}
+.main-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .main-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding: 14px 18px;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+}
