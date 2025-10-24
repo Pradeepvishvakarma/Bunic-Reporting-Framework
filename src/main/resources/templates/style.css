@@ -112,6 +112,7 @@ a.links { font: 9pt arial; color: #005ba0;}
   text-transform: capitalize;
   font-family: Arial, Helvetica, sans-serif;
   margin: 11pt;
+  white-space:nowrap;
 }
 .number-format-red {
   color: #f33 !important;

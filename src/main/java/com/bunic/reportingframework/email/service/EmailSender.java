@@ -12,7 +12,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileOutputStream;
+
+import static com.bunic.reportingframework.common.constant.Constant.*;
 
 @Service
 public class EmailSender {
@@ -46,16 +48,16 @@ public class EmailSender {
         helper.setSubject(emailProperties.getSubject());
         helper.setText(String.valueOf(emailProperties.getContent()), true);
 
-        var newPath = String.format("%s%s%s", emailProperties.getFilePath(), emailProperties.getAttachmentName(), ".eml");
+        var newPath = String.format(THREE_STRING, emailProperties.getFilePath(), emailProperties.getAttachmentName(), EMAIL_FILE_EXTENSION);
         if (emailProperties.isHasAttachment()){
-            var newExcelPath = String.format("%s%s%s", emailProperties.getFilePath(), emailProperties.getAttachmentName(), ".xlsx");
-            helper.addAttachment(String.format("%s%s",emailProperties.getAttachmentName(),".xlsx"), new File(newExcelPath));
+            var newExcelPath = String.format(THREE_STRING, emailProperties.getFilePath(), emailProperties.getAttachmentName(), EXCEL_FILE_EXTENSION);
+            helper.addAttachment(String.format(TWO_STRING,emailProperties.getAttachmentName(), EXCEL_FILE_EXTENSION), new File(newExcelPath));
         }
 
         MimeMessage mimeMessage = helper.getMimeMessage();
-        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(newPath)) {
+        try (FileOutputStream fos = new FileOutputStream(newPath)) {
             mimeMessage.writeTo(fos);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new BunicRuntimeException("Email runner - problem on composing email file"+ e.getMessage(), e);
         }
     }

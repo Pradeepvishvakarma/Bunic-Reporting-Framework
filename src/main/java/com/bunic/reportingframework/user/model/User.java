@@ -18,16 +18,20 @@ import java.util.Map;
 public class User {
     @Id
     private String userId;
-    private String name;
+    private String firstName;
+    private String lastName;
     private String emailId;
     private String accessLevel;
     private Map<String, List<String>> entitlementAccess;
+    private List<String> regionAccess;
+    private List<String> deskAccess;
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("User{");
         sb.append("userId='").append(userId).append('\'');
-        sb.append(", name='").append(name).append('\'');
+        sb.append(", First Name='").append(firstName).append('\'');
+        sb.append(", Last Name='").append(lastName).append('\'');
         sb.append(", emailId='").append(emailId).append('\'');
         sb.append(", accessLevel='").append(accessLevel).append('\'');
         sb.append(", entitlementAccess=").append(entitlementAccess);

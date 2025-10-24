@@ -42,12 +42,18 @@
         }
       }
     ],
+    "pivotConfig": {
+      "enabled": false,
+      "rowGroup": [
+        "region"
+      ]
+    },
     "emailReportProperties": {
-      "reportName": "Risk By Portfolio as on 20 Sep 2025",
-      "subject": "Risk By Portfolio as on 20 Sep 2025",
+      "reportName": "Risk By Portfolio as of {timestamp}",
+      "subject": "Risk By Portfolio as of {timestamp}",
       "emailBodyReport": true,
       "includeExcelAttachment": true,
-      "attachmentFileName": "RiskByPortfolio"
+      "attachmentFileName": "RiskByPortfolio_as_of_{timestamp}"
     }
   },
   {
@@ -78,16 +84,14 @@
         "title": "Total Pnl",
         "field": "totalPnl",
         "type": "number"
-      },
-      {
-        "title": "IRDL",
-        "field": "irdl",
-        "type": "number"
       }
     ],
     "emailReportProperties": {
-      "reportName": "Risk By Portfolio",
-      "subject": "BUNIC"
+      "reportName": "Risk By tenor as of {timestamp}",
+      "subject": "Risk By tenor as of {timestamp}",
+      "emailBodyReport": true,
+      "includeExcelAttachment": false,
+      "attachmentFileName": "RiskByTenor_as_of_{timestamp}"
     }
   },
   {
@@ -132,7 +136,7 @@
     }
   },
   {
-    "code": "risk_by_portfolio_group_report",
+    "code": "riskbyportfolio_group_report",
     "name": "Risk By Portfolio Group Report",
     "accessLevel": "REGION_LEVEL",
     "groupReportEnabled": true,
@@ -144,7 +148,7 @@
             {
               "report": "riskbyportfolio",
               "config": {
-                "title": "Risk By Portfolio - Report 1"
+                "title": "Risk By Portfolio"
               }
             }
           ]
@@ -152,9 +156,9 @@
         {
           "cols": [
             {
-              "report": "riskbyportfolio",
+              "report": "riskbytenor",
               "config": {
-                "title": "Risk By Portfolio - Report 2"
+                "title": "Risk By Tenor"
               }
             }
           ]
@@ -162,11 +166,11 @@
       ]
     },
     "emailReportProperties": {
-      "reportName": "Risk By Portfolio Group Report as on 20 Sep 2025",
-      "subject": "Risk By Portfolio Group Report as on 20 Sep 2025",
+      "reportName": "Risk By Portfolio Group Report as of {timestamp}",
+      "subject": "Risk By Portfolio Group Report as of {timestamp}",
       "emailBodyReport": true,
       "includeExcelAttachment": false,
-      "attachmentFileName": "RiskByPortfolio_group_report"
+      "attachmentFileName": "RiskByPortfolio_group_report_as_of_{timestamp}"
     }
   }
 ]

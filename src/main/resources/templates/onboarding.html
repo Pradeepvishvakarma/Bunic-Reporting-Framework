@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Onboarding</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            padding: 0px;
+        }
+        .onboarding-form {
+            background: white;
+            padding: 35px;
+            max-width: 700px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input, button, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/header-footer.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="onboarding-form">
+    <h2>Welcome! Enter User Details</h2>
+    &nbsp;&nbsp;
+    <form th:action="@{/onboarding}" th:object="${user}" method="post">
+
+        <label>First Name</label>
+        <input type="text" th:field="*{firstName}" placeholder="Enter your first name" required>
+
+        <label>Last Name</label>
+        <input type="text" th:field="*{lastName}" placeholder="Enter your last name" required>
+
+        <label>Email</label>
+        <input type="email" th:field="*{emailId}" placeholder="Enter your emailId" required>
+
+        <label for="accessLevel">Access Level:</label>
+        <select th:field="*{accessLevel}" id="accessLevel" required>
+            <option value="">--Select--</option>
+            <option value="GLOBAL">Global</option>
+            <option value="REGION">Region</option>
+            <option value="DESK">Country</option>
+        </select>
+
+        <!-- REGION Multi-select -->
+        <div id="regionContainer" class="mb-3" style="display:none;">
+            <label for="regionAccess" class="form-label fw-bold">Select Region(s)</label>
+            <select th:field="*{regionAccess}" id="regionAccess" multiple="multiple" style="width:100%">
+                <option value="ASIA">ASIA</option>
+                <option value="EMEA">EMEA</option>
+                <option value="LATAM">LATAM</option>
+                <option value="NAM">NAM</option>
+            </select>
+        </div>
+
+        <!-- COUNTRY Multi-select -->
+        <div id="countryContainer" class="mb-3" style="display:none;">
+            <label for="deskAccess" class="form-label fw-bold">Select Country(ies)</label>
+            <select th:field="*{deskAccess}" id="deskAccess" multiple="multiple" style="width:100%">
+                <option value="INDIA">India</option>
+                <option value="JAPAN">Japan</option>
+                <option value="BRAZIL">Brazil</option>
+                <option value="CHINA">China</option>
+            </select>
+        </div>
+
+        <button type="submit">Create Account</button>
+    </form>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- JS Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for multi-selects
+        $('#regionAccess').select2({
+            placeholder: "Select region(s)"
+        });
+        $('#deskAccess').select2({
+            placeholder: "Select country(ies)"
+        });
+
+        const accessLevelSelect = document.getElementById("accessLevel");
+        const regionContainer = document.getElementById("regionContainer");
+        const countryContainer = document.getElementById("countryContainer");
+
+        // Show/hide multi-selects based on accessLevel
+        accessLevelSelect.addEventListener("change", function () {
+            regionContainer.style.display = "none";
+            countryContainer.style.display = "none";
+
+            if (this.value === "REGION") {
+                regionContainer.style.display = "block";
+            } else if (this.value === "DESK") {
+                countryContainer.style.display = "block";
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

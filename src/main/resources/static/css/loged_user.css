@@ -1,0 +1,96 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Container styling */
+.container {
+    background: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    transition: box-shadow 0.3s;
+}
+
+.container:hover {
+    box-shadow: 0 12px 40px rgba(44, 62, 80, 0.18);
+}
+
+/* Heading */
+h1 {
+    font-size: 2rem;
+    color: #2d3e50;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Paragraph */
+p {
+    color: #555;
+    font-size: 1.05rem;
+    margin-bottom: 1.2rem;
+}
+
+/* User details */
+.user-details {
+    background: #f4f7fb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.06);
+}
+
+.user-details p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.user-details strong {
+    color: #2980b9;
+    font-weight: 600;
+}
+
+/* Logout button */
+.logout-button {
+    display: inline-block;
+    padding: 0.7rem 1.5rem;
+    background: #2980b9;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.logout-button:hover {
+    background: #1c5980;
+    box-shadow: 0 4px 16px rgba(44, 62, 80, 0.12);
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .container {
+        padding: 1.2rem 0.5rem;
+        max-width: 95vw;
+    }
+    h1 {
+        font-size: 1.3rem;
+    }
+}

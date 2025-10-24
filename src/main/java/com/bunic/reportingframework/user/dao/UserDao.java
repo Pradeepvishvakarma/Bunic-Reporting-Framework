@@ -22,9 +22,16 @@ public class UserDao {
     private MongoTemplate primaryTemplate;
 
     public User getUserByUserId(String userId){
-        LOGGER.info("fetch userId {} from db", userId);
+        LOGGER.info("fetch user {} from db", userId);
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
+        return primaryTemplate.findOne(query, User.class, COLLECTION_USERS);
+    }
+
+    public User getUserByEmailId(String emailId){
+        LOGGER.info("fetch user {} from db", emailId);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("emailId").is(emailId));
         return primaryTemplate.findOne(query, User.class, COLLECTION_USERS);
     }
 

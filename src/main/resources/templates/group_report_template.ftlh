@@ -24,26 +24,29 @@
                     </tr>
 
                     <tr>
-                        <#if groupReportContent??>
-                            <#list groupReportContent as key, value>
-                                <table width="100%" style="margin:2px 0 10px 20px;" border="0" cellspacing="0" cellpadding="0" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-                                    <tr>
-                                        <td>
-                                            <div>
-                                                <#list value as htmlContent>
-                                                    ${htmlContent?no_esc}
-                                                </#list>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </#list>
-                        </#if>
+                        <td colspan="3" width="100%">
+                            <#if groupReportContent??>
+                                <#list groupReportContent as key, value>
+                                    <table width="100%" style="margin:2px 0 10px 20px;" border="0" cellspacing="0" cellpadding="0" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <#list value as htmlContent>
+                                                        ${htmlContent?no_esc}
+                                                    </#list>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </#list>
+                            </#if>
+                        </td>
                     </tr>
-
-                    <td>
-                        <#include "group_report_footer.ftlh">
-                    </td>
+                    <tr>
+                        <td colspan="3">
+                            <#include "group_report_footer.ftlh">
+                        </td>
+                    </tr>
                 </table>
             </td>
         </tr>

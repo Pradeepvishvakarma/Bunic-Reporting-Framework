@@ -2,18 +2,20 @@
     <tr style="margin:2px 0 10px 20px;">
         <h2>${reportTitle!}</h2>
     </tr>
-    <tr>
-      <td colspan="2" class="content-log">
-        <ul style="list-style-type:square; padding:0; margin:2px 0 10px 30px;">
-          <#list legends as legend>
-            <li>${legend}</li>
-          </#list>
-        </ul>
-      </td>
-    </tr>
+    <#if legends?? && legends?size gt 0>
+        <tr>
+            <td colspan="2" class="content-log">
+                <ul style="list-style-type:square; padding:0; margin:2px 0 10px 20px;">
+                    <#list legends as legend>
+                        <li>${legend}</li>
+                    </#list>
+                </ul>
+            </td>
+        </tr>
+    </#if>
 
     <tr>
-      <td colspan="2" height="30pt">&nbsp;</td>
+      <td colspan="2" height="20pt">&nbsp;</td>
     </tr>
     <#if isPivotEnableRowGrouping?? && isPivotEnableRowGrouping == true>
         <tr>
@@ -36,7 +38,7 @@
     </#if>
 
   <tr>
-        <td colspan="2" height="30pt">&nbsp;</td>
+        <td colspan="2" height="20pt">&nbsp;</td>
       </tr>
   <tr>
     <td colspan="2" class="content-log">${(attachmentMessage)!}</td>

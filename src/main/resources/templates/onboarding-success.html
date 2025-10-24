@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Registered</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f9;
+            padding: 0px;
+        }
+        .registered-form {
+            background: white;
+            padding: 35px;
+            max-width: 800px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/header-footer.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="registered-form">
+    <th:block th:if="${status == 'COMPLETED'}">
+        <h1 style="color: green;">Registration Successful</h1>
+    </th:block>
+    <th:block th:if="${status == 'FAILED'}">
+        <h1 style="color: red;">Registration Failed</h1>
+    </th:block>
+    <th:block th:if="${message != null}">
+        <p th:text="${message}"></p>
+    </th:block>
+    <th:block th:if="${desc != null}">
+        <p th:text="${desc}"></p>
+    </th:block>
+
+    <button type="button" onclick="history.back();" style="background:#6c757d; color:white;">Go Back</button></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
