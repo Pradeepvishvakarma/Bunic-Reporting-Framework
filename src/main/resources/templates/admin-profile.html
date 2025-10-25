@@ -52,10 +52,35 @@
             box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
             width: 100%;
         }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin: 0;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 5px;
+            padding: 15px 20px;
+            position: fixed;
+            z-index: 1000;
+            right: 30px;
+            bottom: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.6s, bottom 0.6s;
+        }
+
+        /* Show the toast */
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 75px;
+        }
         .btn-edit { background: #28a745; }
         .btn-delete { background: #dc3545; }
         .btn-admin { background: #17a2b8; }
         .btn-logout { background: #6c757d; float: right; }
+        .btn-addUser { background: #007bff; float: right; margin-right:10px; color: white;}
     </style>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -70,6 +95,9 @@
     <form th:action="@{/logout}" method="get">
         <button class="btn btn-logout">Logout</button>
     </form>
+    <form th:action="@{/addUser}" method="get">
+        <button class="btn btn-addUser">Add New User</button>
+    </form>
 
     <h3>User Management</h3>
     <table>
@@ -82,6 +110,7 @@
             <th>Access</th>
             <th>Type</th>
             <th>Actions</th>
+            <th>Admin Access Control</th>
         </tr>
         </thead>
         <tbody>
@@ -101,6 +130,8 @@
                     <input type="hidden" name="userId" th:value="${u.userId}"/>
                     <button class="btn btn-edit" type="submit">Edit</button>
                 </form>
+            </td>
+            <td>
                 <form th:action="@{/admin-profile/toggle-admin}" method="post" style="display:inline;">
                     <input type="hidden" name="userId" th:value="${u.userId}"/>
                     <button class="btn btn-admin"
@@ -111,17 +142,46 @@
         </tbody>
     </table>
 
-    <th:block th:if="${message}">
-        &nbsp;&nbsp;
-        <p th:text="${message}" style="color:green; text-align:center;"></p>
-    </th:block>
-
 </div>
+<div id="toast" class="toast"></div>
 <div class="custom-admin-footer" th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script th:inline="javascript">
+    function showToast(message, type = "info") {
+        if (!message) return;
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+
+        toast.style.backgroundColor =
+            type === "success" ? "#28a745" :
+            type === "error" ? "#dc3545" :
+            "#333";
+
+        toast.classList.add("show");
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+        }, 5000);
+    }
+
+    // Proper Thymeleaf-safe variable binding
+    const status  = /*[[${status} ?: 'NONE']]*/ 'NONE';
+    const message = /*[[${message} ?: '']]*/ '';
+
+    // Debug logs (optional)
+    console.log("Toast status:", status);
+    console.log("Toast message:", message);
+
+    if (status === 'FAILED') {
+        showToast(message, 'error');
+    } else if (status === 'COMPLETED') {
+        showToast(message, 'success');
+    }
+</script>
 
 </body>
 </html>

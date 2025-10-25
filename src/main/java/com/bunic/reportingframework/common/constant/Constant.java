@@ -48,6 +48,9 @@ public class Constant {
     public static final String DATE_TIME_FORMAT = "dd-MMM-yyyy HH:mm";
     public static final String DATE_FORMAT = "dd-MMM-yyyy";
     public static final String TWO_STRING_WITH_SPACE = "%s %s";
+    public static final String THREE_STRING_WITH_SPACE = "%s %s %s";
+    public static final String FOUR_STRING_WITH_SPACE = "%s %s %s %s";
+    public static final String FIVE_STRING_WITH_SPACE = "%s %s %s %s %s";
     public static final String TWO_STRING = "%s%s";
     public static final String THREE_STRING = "%s%s%s";
     public static final String TIME_ZONE_IST = "IST";

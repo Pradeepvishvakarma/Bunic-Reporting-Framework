@@ -142,7 +142,6 @@ public class UserService {
     public void updateUserDetails(User existingUser, User newUserDetails) {
         newUserDetails.setUserId(newUserDetails.getUserId().toUpperCase());
         newUserDetails.setUserType(existingUser.getUserType() == null ? "USER" : existingUser.getUserType());
-        newUserDetails.setAccessLevel(existingUser.getAccessLevel() == null ? "GLOBAL" : existingUser.getAccessLevel());
         userDao.deleteUserByUserId(existingUser.getUserId());
         userDao.saveUser(newUserDetails);
     }
