@@ -104,7 +104,6 @@ public class AdminLoginController {
         model.addAttribute("UserAddVia", "ADMIN");
         model.addAttribute("adminUserId", session.getAttribute("adminUserId"));
         model.addAttribute("adminUserName", session.getAttribute("adminUserName"));
-        System.out.println("session.getAttribute(\"adminMessage\") details :- "+ session.getAttribute("adminMessage"));
         if(session.getAttribute("adminMessage") != null){
             model.addAttribute("status", session.getAttribute("adminStatus"));
             model.addAttribute("message", session.getAttribute("adminMessage"));

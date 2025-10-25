@@ -90,6 +90,8 @@
 <div th:replace="~{fragments/header :: header}"></div>
 
 <div class="container">
+    <h2 style="text-align: center; color:red; font-size: 28px;">Admin Panel</h2>
+        &nbsp;
     <h2 style="text-align: center;">Welcome, <span th:text="${adminUserName}"></span></h2>
         &nbsp;&nbsp;
     <form th:action="@{/logout}" method="get">

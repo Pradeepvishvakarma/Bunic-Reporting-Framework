@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,11 +122,29 @@ public class UserService {
         if(user.getUserType() == null){
             user.setUserType("USER");
         }
+        setEntitlementAccess(user);
         userDao.saveUser(user);
         message.setMessage(String.format(THREE_STRING,"Welcome aboard, ", getUserName(user), "!"));
         message.setStatus(TaskStatus.COMPLETED);
         message.setDesc(String.format(TWO_STRING, "Your user ID is ", user.getUserId()));
         return message;
+    }
+
+    private void setEntitlementAccess(User user) {
+        if (user.getAccessLevel().equalsIgnoreCase("GLOBAL")) {
+            user.setRegionAccess(Collections.emptyList());
+            user.setDeskAccess(Collections.emptyList());
+        } else if (user.getAccessLevel().equalsIgnoreCase("REGION")) {
+            user.setDeskAccess(Collections.emptyList());
+            if (user.getRegionAccess().isEmpty()) {
+                user.setRegionAccess(List.of("ASIA", "EMEA", "LATAM", "NAM"));
+            }
+        } else if (user.getAccessLevel().equalsIgnoreCase("COUNTRY")) {
+            user.setRegionAccess(Collections.emptyList());
+            if (user.getDeskAccess().isEmpty()) {
+                user.setDeskAccess(List.of("INDIA", "JAPAN", "BRAZIL", "CHINA"));
+            }
+        }
     }
 
     public String getUserName(User user) {
@@ -142,6 +161,7 @@ public class UserService {
     public void updateUserDetails(User existingUser, User newUserDetails) {
         newUserDetails.setUserId(newUserDetails.getUserId().toUpperCase());
         newUserDetails.setUserType(existingUser.getUserType() == null ? "USER" : existingUser.getUserType());
+        setEntitlementAccess(newUserDetails);
         userDao.deleteUserByUserId(existingUser.getUserId());
         userDao.saveUser(newUserDetails);
     }
