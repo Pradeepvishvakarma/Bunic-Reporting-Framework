@@ -39,6 +39,30 @@
             color: #6c757d;             /* grey text */
             cursor: not-allowed;        /* show lock cursor */
         }
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin: 0;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 5px;
+            padding: 15px 20px;
+            position: fixed;
+            z-index: 1000;
+            right: 30px;
+            bottom: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.6s, bottom 0.6s;
+        }
+
+        /* Show the toast */
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 75px;
+        }
     </style>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/header-footer.css}">
@@ -103,17 +127,11 @@
             </select>
         </div>
 
-        <th:block th:if="${status == 'COMPLETED'}">
-            <p style="color: green; " th:text="${message}"></p>
-        </th:block>
-        <th:block th:if="${status == 'FAILED'}">
-            <p style="color: red;" th:text="${message}"></p>
-        </th:block>
-
         <button type="submit">Update User</button>
     </form>
 </div>
 
+<div id="toast" class="toast"></div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- JS -->
@@ -144,6 +162,38 @@
             toggleFields(this.value);
         });
     });
+</script>
+<script th:inline="javascript">
+    function showToast(message, type = "info") {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+
+        // Color based on type
+        toast.style.backgroundColor =
+            type === "success" ? "#28a745" :
+            type === "error" ? "#dc3545" :
+            "#333";
+
+        toast.className = "toast show";
+
+        setTimeout(() => {
+            toast.className = toast.className.replace("show", "");
+        }, 5000);
+    }
+
+    // Enable Thymeleaf variable evaluation
+    let status = [[${status}]];
+    let message = [[${message}]];
+
+    // Ensure null safety
+    status = status ? status : '';
+    message = message ? message : '';
+
+    if (status === 'FAILED') {
+        showToast(message, 'error');
+    } else if (status === 'COMPLETED') {
+        showToast(message, 'success');
+    }
 </script>
 
 </body>

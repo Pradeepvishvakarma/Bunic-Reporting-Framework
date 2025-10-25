@@ -52,6 +52,7 @@ public class UserLoginController {
                 session.setAttribute("users", userService.getAllUsers());
                 return "redirect:/admin-profile";
             }
+            model.addAttribute("user", userService.getUserById(user.getUserId().toUpperCase()));
             model.addAttribute("userId", fetchedUser.getUserId());
             model.addAttribute("userName", userService.getUserName(fetchedUser));
             return "update-profile";
