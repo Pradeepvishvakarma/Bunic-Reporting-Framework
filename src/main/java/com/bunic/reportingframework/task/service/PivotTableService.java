@@ -324,8 +324,7 @@ public class PivotTableService {
 
     public void generateExcel(Map<String, Object> emailTemplateData, List<DBObject> data, Metadata metadata, Task task) throws Exception {
         var path = task.getPath();
-        System.out.println("path: " + path);
-        String excelFilePath = String.format("%s%s%s", path, emailTemplateData.get("attachmentFileName"),".xlsx");
+        String excelFilePath = String.format(THREE_STRING, path, emailTemplateData.get("attachmentFileName"),".xlsx");
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Data");
 

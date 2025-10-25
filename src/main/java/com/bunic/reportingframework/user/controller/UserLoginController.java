@@ -71,7 +71,6 @@ public class UserLoginController {
     @PostMapping("/update-profile/update")
     public String processingUpdateProfileForm(@ModelAttribute User user, Model model, HttpSession session) {
         var isAdminRequest = (String) session.getAttribute("UserUpdateVia");
-        System.out.println("isAdminRequest value :- "+isAdminRequest);
         var existingUser = userService.getUserById(user.getUserId().toUpperCase());
         if (existingUser.isPresent()) {
             userService.updateUserDetails(existingUser.get(), user);
