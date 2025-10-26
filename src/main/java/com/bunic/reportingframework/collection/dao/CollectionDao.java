@@ -61,9 +61,8 @@ public class CollectionDao {
             var data = results.getMappedResults().stream()
                     .map(BasicDBObject::new).map(doc -> (DBObject) doc)
                     .toList();
-            LOGGER.info("fetched {} records from DB for report {}", data.size(), metadata.getName());
             var filteredData = filterData(data, user);
-            LOGGER.info("after applying access level filter {} records are available for report {}", filteredData.size(), metadata.getName());
+            LOGGER.info("before {} : after {} record while applying access level filter for report {}", data.size(), filteredData.size(), metadata.getName());
             return filteredData;
         } catch (Exception e){
             throw new BunicRuntimeException(String.format("Invalid pipeline configure for report %s ", metadata.getName()), e);
@@ -78,14 +77,14 @@ public class CollectionDao {
         if(StringUtils.equalsIgnoreCase(accessLevel, "REGION")){
             var regionAccess = user.getRegionAccess();
             rawData = rawData.stream().filter(dbObject -> {
-                if(regionAccess.contains(dbObject.get("region")) || regionAccess.contains(dbObject.get("REGION"))){
+                if ((dbObject.get("region") != null && regionAccess.contains(((String)dbObject.get("region")).toUpperCase())) || (dbObject.get("REGION") != null && regionAccess.contains(((String)dbObject.get("REGION")).toUpperCase()))){
                     return true;
                 }
                 return false;
             }).toList();
         } else if (StringUtils.equalsIgnoreCase(accessLevel, "DESK") || StringUtils.equalsIgnoreCase(accessLevel, "COUNTRY")) {
             var deskAccess = user.getDeskAccess();
-            rawData = rawData.stream().filter(dbObject -> deskAccess.contains(dbObject.get("desk")) || deskAccess.contains(dbObject.get("country"))).toList();
+            rawData = rawData.stream().filter(dbObject -> (dbObject.get("desk") != null && deskAccess.contains(((String)dbObject.get("desk")).toUpperCase())) || (dbObject.get("country") != null && deskAccess.contains(((String)dbObject.get("country")).toUpperCase()))).toList();
         }
         return rawData;
     }

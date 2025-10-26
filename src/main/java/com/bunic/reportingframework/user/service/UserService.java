@@ -142,7 +142,7 @@ public class UserService {
         } else if (user.getAccessLevel().equalsIgnoreCase("COUNTRY")) {
             user.setRegionAccess(Collections.emptyList());
             if (user.getDeskAccess().isEmpty()) {
-                user.setDeskAccess(List.of("INDIA", "JAPAN", "BRAZIL", "CHINA"));
+                user.setDeskAccess(List.of("INDIA", "JAPAN", "BRAZIL", "CHINA", "CANADA","MEXICO","NEW YORK"));
             }
         }
     }
