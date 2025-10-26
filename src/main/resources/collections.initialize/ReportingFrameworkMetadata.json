@@ -21,6 +21,11 @@
         "type": "string"
       },
       {
+        "title": "Business",
+        "field": "business",
+        "type": "string"
+      },
+      {
         "title": "Portfolio",
         "field": "portfolio",
         "type": "string"
@@ -43,9 +48,13 @@
       }
     ],
     "pivotConfig": {
-      "enabled": false,
+      "enabled": true,
       "rowGroup": [
-        "region"
+        "desk"
+      ],
+      "columnGroup": [
+        "region",
+        "business"
       ]
     },
     "emailReportProperties": {
@@ -61,8 +70,14 @@
     "name": "Risk By Tenor",
     "store": {
       "database": "BUNIC",
-      "collection": "risk",
+      "collection": "flashPnlRisk",
       "queryFile": "riskbyportfolio"
+    },
+    "pivotConfig": {
+      "enabled": false,
+      "rowGroup": [
+        "region"
+      ]
     },
     "columns": [
       {
@@ -92,47 +107,6 @@
       "emailBodyReport": true,
       "includeExcelAttachment": false,
       "attachmentFileName": "RiskByTenor_as_of_{timestamp}"
-    }
-  },
-  {
-    "code": "riskbytenor2",
-    "name": "Risk By Tenor",
-    "store": {
-      "database": "BUNIC",
-      "collection": "risk",
-      "queryFile": "riskbyportfolio"
-    },
-    "columns": [
-      {
-        "title": "Region",
-        "field": "region",
-        "type": "string"
-      },
-      {
-        "title": "Desk",
-        "field": "desk",
-        "type": "string"
-      },
-      {
-        "title": "Portfolio",
-        "field": "portfolio",
-        "type": "string"
-      },
-      {
-        "title": "Total Pnl",
-        "field": "totalPnl",
-        "type": "number"
-      },
-      {
-        "title": "IRDL",
-        "field": "irdl",
-        "type": "number"
-      }
-    ],
-    "emailReportProperties": {
-      "reportName": "Risk By Portfolio by pradeep kumar vishvakarma as of 20 Sep 2025",
-      "subject": "BUNIC",
-      "includeExcelAttachment": true
     }
   },
   {
