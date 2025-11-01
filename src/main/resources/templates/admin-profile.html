@@ -12,7 +12,7 @@
         .container {
             width: 100%;
             margin: auto;
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 50px auto;
             background: white;
             padding: 25px;
@@ -216,7 +216,9 @@
                 <th>First Name</th>
                 <th>Last Name</th>
                 <th>Email</th>
-                <th>Access</th>
+                <th>Access Category</th>
+                <th>Region Access</th>
+                <th>Country Access</th>
                 <th>Type</th>
                 <th>Actions</th>
                 <th>Admin Access Control</th>
@@ -228,8 +230,11 @@
                 <td style="text-align: left;" th:text="${u.firstName}"></td>
                 <td style="text-align: left;" th:text="${u.lastName}"></td>
                 <td style="text-align: left;" th:text="${u.emailId}"></td>
-                <td style="text-align: left;" th:text="${u.userType}"></td>
                 <td style="text-align: left;" th:text="${u.accessLevel}"></td>
+                <td style="text-align: left;" th:text="${#strings.listJoin(u.regionAccess, ', ')}"></td>
+                <td style="text-align: left;" th:text="${#strings.listJoin(u.deskAccess, ', ')}"></td>
+                <td style="text-align: left;" th:text="${u.userType}"></td>
+
                 <td>
                     <form th:action="@{/admin-profile/delete}" method="post" style="display:inline;">
                         <input type="hidden" name="userId" th:value="${u.userId}" />
