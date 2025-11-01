@@ -3,7 +3,7 @@ package com.bunic.reportingframework.user.service;
 import com.bunic.reportingframework.task.model.TaskStatus;
 import com.bunic.reportingframework.user.dao.UserDao;
 import com.bunic.reportingframework.user.model.User;
-import com.bunic.reportingframework.user.model.UserNotifaction;
+import com.bunic.reportingframework.user.model.Notification;
 import org.apache.poi.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,11 +95,15 @@ public class UserService {
 
 
     public List<User> getAllUsers() {
-        return userDao.getUsers();
+        return userDao.getUsers().stream().sorted(Comparator.comparing(User::getUserId)).toList();
     }
 
     public Optional<User> getUserById(String userId) {
         return Optional.of(userDao.getUserByUserId(userId));
+    }
+
+    public User getUser(String userId) {
+        return userDao.getUserByUserId(userId);
     }
 
     public String deleteUser(String userId) {
@@ -106,8 +111,8 @@ public class UserService {
         return "User deleted successfully!";
     }
 
-    public UserNotifaction onBoardUser(User user) {
-        var message = new UserNotifaction();
+    public Notification onBoardUser(User user) {
+        var message = new Notification();
         var  existingUser = userDao.getUserByEmailId(user.getEmailId());
         if (existingUser != null){
             message.setMessage(String.format(THREE_STRING,"User ", getUserName(user), " with emailId "+ user.getEmailId() + " already exists"));

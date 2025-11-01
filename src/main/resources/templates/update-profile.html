@@ -71,7 +71,7 @@
 </head>
 <body>
 
-<div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header('User Profile Management')}"></div>
 
 <div class="edit-form">
     <th:block th:if="${UserUpdateVia != 'ADMIN'}">

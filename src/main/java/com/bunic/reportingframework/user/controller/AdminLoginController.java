@@ -1,5 +1,7 @@
 package com.bunic.reportingframework.user.controller;
 
+import com.bunic.reportingframework.email.EmailManagementService;
+import com.bunic.reportingframework.email.model.EmailSubscription;
 import com.bunic.reportingframework.user.model.User;
 import com.bunic.reportingframework.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -20,13 +22,20 @@ public class AdminLoginController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    EmailManagementService emailManagementService;
+
     @GetMapping("/admin-profile")
-    public String adminProfileForm(HttpSession session, Model model) {
+    public String adminProfileForm(@RequestParam(defaultValue = "userManagement") String activeTab, HttpSession session, Model model) {
+        model.addAttribute("activeTab", activeTab);
         model.addAttribute("user", new User());
+        model.addAttribute("emailSubscription", new EmailSubscription());
         model.addAttribute("isAdmin", "ADMIN");
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("emailSubscriptions", emailManagementService.getAllEmailSubscriptions());
         model.addAttribute("adminUserId", session.getAttribute("adminUserId"));
         model.addAttribute("adminUserName", session.getAttribute("adminUserName"));
+        session.setAttribute("isAdmin", "ADMIN");
         if(session.getAttribute("adminMessage") != null){
             model.addAttribute("status", session.getAttribute("adminStatus"));
             model.addAttribute("message", session.getAttribute("adminMessage"));
@@ -61,7 +70,13 @@ public class AdminLoginController {
         model.addAttribute("adminUserName", session.getAttribute("adminUserName"));
         model.addAttribute("status", "COMPLETED");
         model.addAttribute("message", String.format(THREE_STRING_WITH_SPACE,"User ",userId," deleted successfully!"));
-        return "admin-profile";
+        session.setAttribute("activeTab","userManagement");
+        session.setAttribute("adminMessage", String.format(THREE_STRING_WITH_SPACE,"User ",userId," deleted successfully!"));
+        session.setAttribute("adminStatus", "COMPLETED");
+        model.addAttribute("adminMessage", session.getAttribute("adminMessage"));
+        model.addAttribute("adminStatus", session.getAttribute("adminStatus"));
+
+        return "redirect:/admin-profile?activeTab=userManagement";
     }
 
     @GetMapping("/admin-profile/edit")
@@ -75,6 +90,8 @@ public class AdminLoginController {
         session.setAttribute("adminStatus", "COMPLETED");
         model.addAttribute("adminMessage", session.getAttribute("adminMessage"));
         model.addAttribute("adminStatus", session.getAttribute("adminStatus"));
+        session.setAttribute("activeTab","userManagement");
+
         return "update-profile";  // reuse existing update page
     }
 
@@ -90,7 +107,12 @@ public class AdminLoginController {
         var adminAccessPermissionType = updateUser.getUserType();
         var permission = adminAccessPermissionType.equalsIgnoreCase("ADMIN") ? " Granted" : " Revoked";
         model.addAttribute("message", String.format(FOUR_STRING_WITH_SPACE,"User ",userId, permission, " Admin Access!"));
-        return "admin-profile";
+        session.setAttribute("activeTab","userManagement");
+        session.setAttribute("adminMessage", String.format(FOUR_STRING_WITH_SPACE,"User ",userId, permission, " Admin Access!"));
+        session.setAttribute("adminStatus", "COMPLETED");
+        model.addAttribute("adminMessage", session.getAttribute("adminMessage"));
+        model.addAttribute("adminStatus", session.getAttribute("adminStatus"));
+        return "redirect:/admin-profile?activeTab=userManagement";
     }
 
     @GetMapping("/addUser")
@@ -110,6 +132,7 @@ public class AdminLoginController {
         } else {
             model.addAttribute("message", session.getAttribute("message"));
         }
+        session.setAttribute("activeTab","userManagement");
         return "onboarding";
     }
 

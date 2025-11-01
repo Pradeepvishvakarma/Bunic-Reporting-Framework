@@ -61,12 +61,12 @@
 </head>
 <body>
 
-<div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header(' ')}"></div>
 
 <div class="login-form">
     <h2>Enter Credentials</h2>
     &nbsp;&nbsp;
-    <form th:action="${isAdmin == 'ADMIN'} ? @{/admin-profile} : @{/update-profile}" th:object="${user}" method="post">
+    <form th:action="${isAdmin == 'ADMIN'} ? @{/admin-profile} : @{/user-profile}" th:object="${user}" method="post">
 
         <label>User Id</label>
         <input type="text" th:field="*{userId}" placeholder="Enter your user id" required>

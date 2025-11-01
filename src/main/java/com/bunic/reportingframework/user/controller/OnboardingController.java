@@ -1,5 +1,7 @@
 package com.bunic.reportingframework.user.controller;
 
+import com.bunic.reportingframework.email.EmailManagementService;
+import com.bunic.reportingframework.email.model.EmailSubscription;
 import com.bunic.reportingframework.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ public class OnboardingController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    EmailManagementService emailManagementService;
 
     @GetMapping("/")
     public String showLoginFormOnStartUp(Model model) {
@@ -47,7 +52,14 @@ public class OnboardingController {
                 model.addAttribute("adminUserId", session.getAttribute("adminUserId"));
                 model.addAttribute("adminUserName", session.getAttribute("adminUserName"));
                 model.addAttribute("users", userService.getAllUsers());
-                return "admin-profile";
+                model.addAttribute("emailSubscriptions", emailManagementService.getAllEmailSubscriptions());
+
+                session.setAttribute("adminMessage", message.getMessage());
+                session.setAttribute("adminStatus", message.getStatus().name());
+                model.addAttribute("adminMessage", session.getAttribute("adminMessage"));
+                model.addAttribute("adminStatus", session.getAttribute("adminStatus"));
+
+                return "redirect:/admin-profile?activeTab=userManagement";
             }
         } else {
             if (validationParams.isEmpty()) {
@@ -55,7 +67,11 @@ public class OnboardingController {
                 model.addAttribute("message", message.getMessage());
                 model.addAttribute("status", message.getStatus().name());
                 model.addAttribute("desc", message.getDesc());
-                return "onboarding-success";
+                model.addAttribute("userId", user.getUserId());
+                model.addAttribute("userName", userService.getUserName(user));
+                session.setAttribute("userId", user.getUserId());
+                session.setAttribute("userName", userService.getUserName(user));
+                return "redirect:/user-profile?activeTab=userManagement";
             }
         }
         return "onboarding-success";

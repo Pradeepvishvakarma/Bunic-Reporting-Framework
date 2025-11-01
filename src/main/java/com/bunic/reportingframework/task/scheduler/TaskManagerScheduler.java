@@ -1,21 +1,17 @@
 package com.bunic.reportingframework.task.scheduler;
 
+import com.bunic.reportingframework.common.util.CommonUtil;
 import com.bunic.reportingframework.task.dao.TaskManagerDao;
-import com.bunic.reportingframework.task.model.Task;
-import com.bunic.reportingframework.task.model.TaskScheduler;
-import com.bunic.reportingframework.task.model.TaskStatus;
 import com.bunic.reportingframework.task.service.TaskManagerService;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ScheduledFuture;
@@ -24,8 +20,6 @@ import java.util.concurrent.ScheduledFuture;
 public class TaskManagerScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskManagerScheduler.class);
-    private static final List<String> TIMEZONES = Arrays.asList(TimeZone.getAvailableIDs());
-    private static final String MSG_INVALID_CRON_EXPRESSION = "Scheduler Id {} configured with invalid cronTriggerTime: {} or cronTimeZone: {}";
 
     @Autowired
     private TaskManagerDao taskManagerDao;
@@ -64,12 +58,12 @@ public class TaskManagerScheduler {
     private void schedule() {
         runningJobs = new ArrayList<>();
         taskManagerDao.getActiveSchedulers().forEach(scheduler -> {
-            if (isValidScheduler(scheduler)) {
+            if (taskManagerService.isValidScheduler(scheduler)) {
                 LOGGER.info("Task Manager Scheduler {} - scheduling triggerTime: {} with timeZone: {}", scheduler.getId(), scheduler.getCronTriggerTime(), scheduler.getCronTimeZone());
                 runningJobs.add(taskScheduler.schedule(() -> {
                     try {
                         LOGGER.info("Task Manager Scheduler {} - running triggerTime: {} with timeZone: {}", scheduler.getId(), scheduler.getCronTriggerTime(), scheduler.getCronTimeZone());
-                        var task = toTask(scheduler);
+                        var task = CommonUtil.toTask(scheduler);
                         task.setParams(taskManagerService.getTaskParams(scheduler));
                         taskManagerService.saveTask(scheduler, task);
                     } catch (Exception e){
@@ -82,23 +76,4 @@ public class TaskManagerScheduler {
         });
     }
 
-    private boolean isValidScheduler(TaskScheduler scheduler){
-        if(scheduler == null){
-            return false;
-        }
-        if(!CronExpression.isValidExpression(scheduler.getCronTriggerTime()) || !TIMEZONES.contains(scheduler.getCronTimeZone())){
-            LOGGER.error(MSG_INVALID_CRON_EXPRESSION, scheduler.getId(), scheduler.getCronTriggerTime(), scheduler.getCronTimeZone());
-            return false;
-        }
-        return true;
-    }
-
-    private Task toTask(TaskScheduler scheduler){
-        var task = new Task();
-        task.setType(scheduler.getType());
-        task.setReferenceId(scheduler.getId());
-        task.setStatus(TaskStatus.PENDING);
-        task.setUserId(scheduler.getUserId());
-        return task;
-    }
 }
