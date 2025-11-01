@@ -1,5 +1,6 @@
 package com.bunic.reportingframework.user.controller;
 
+import com.bunic.reportingframework.email.EmailManagementService;
 import com.bunic.reportingframework.user.model.User;
 import com.bunic.reportingframework.user.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -9,6 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Controller
 public class UserLoginController {
@@ -32,7 +36,7 @@ public class UserLoginController {
                 model.addAttribute("isAdmin", "ADMIN");
                 return "admin-profile";
             }
-            return "update-profile";
+            return "redirect:/user-profile";
         }
         model.addAttribute("message", "Invalid credentials");
         model.addAttribute("status", "FAILED");
@@ -79,7 +83,11 @@ public class UserLoginController {
             if(isAdminRequest != null && isAdminRequest.equalsIgnoreCase("ADMIN")){
                 return "redirect:/admin-profile";
             }
-            return "login";
+            model.addAttribute("userName", userService.getUserName(user));
+            session.setAttribute("userName", userService.getUserName(user));
+            session.setAttribute("userId", user.getUserId());
+            model.addAttribute("userId", user.getUserId());
+            return "redirect:/user-profile";
         }
         model.addAttribute("message", "User Details not found");
         model.addAttribute("status", "FAILED");

@@ -57,6 +57,16 @@ public class CollectionService {
         return metadata;
     }
 
+    public Metadata getMetadataByCode(String reportCode) throws BunicException {
+        var metadataList = getMetadataList();
+        var metadata = metadataList.stream().filter(entry -> reportCode.equalsIgnoreCase(entry.getCode())).findFirst().orElse(null);
+        if(metadata == null){
+            throw new BunicInvalidRequestException("Metadata not found for report: " + reportCode);
+        }
+        LOGGER.info("report: {} - metadata: {}", reportCode, metadata);
+        return metadata;
+    }
+
     public List<Metadata> getMetadataList(){
         return collectionDao.getAllMetadata();
     }

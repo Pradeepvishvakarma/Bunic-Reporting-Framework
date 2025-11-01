@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>User Onboarding</title>
+    <title>Email Subscription</title>
     <style>
         body {
             font-family: Arial;
@@ -62,59 +62,50 @@
 </head>
 <body>
 
-<div th:replace="~{fragments/header :: header('User OnBoarding Portal')}"></div>
+<div th:replace="~{fragments/header :: header('Email Subscription Management')}"></div>
 
 <div class="onboarding-form">
-    <h2>Welcome! Enter User Details</h2>
+    <h2> Enter Email Configuration</h2>
     &nbsp;&nbsp;
-    <form th:action="@{/onboarding}" th:object="${user}" method="post">
+    <form th:action="@{/add-new-email}" th:object="${emailSubscription}" method="post">
 
-        <label>First Name</label>
-        <input type="text" th:field="*{firstName}" placeholder="Enter your first name" required>
+        <label>User ID</label>
+        <input type="text" th:field="*{userId}" placeholder="Enter user id" required>
 
-        <label>Last Name</label>
-        <input type="text" th:field="*{lastName}" placeholder="Enter your last name" required>
-
-        <label>Email</label>
-        <input type="email" th:field="*{emailId}" placeholder="Enter your emailId" required>
-
-        <label>Password</label>
-        <input type="password" th:field="*{password}" placeholder="Enter your password" required>
-
-        <label for="accessLevel">Access Level:</label>
-        <select th:field="*{accessLevel}" id="accessLevel" required>
+        <label for="reportCode">Select Report:</label>
+        <select th:field="*{reportCode}" id="reportCode" required>
             <option value="">--Select--</option>
-            <option value="GLOBAL">Global</option>
-            <option value="REGION">Region</option>
-            <option value="DESK">Country</option>
+            <option value="riskbyportfolio">Risk By Portfolio</option>
+            <option value="riskbytenor">Risk By Tenor</option>
+            <option value="riskbyportfolio_group_report">Risk By Portfolio - Group Report</option>
         </select>
 
-        <!-- REGION Multi-select -->
-        <div id="regionContainer" class="mb-3" style="display:none;">
-            <label for="regionAccess" class="form-label fw-bold">Select Region(s)</label>
-            <select th:field="*{regionAccess}" id="regionAccess" multiple="multiple" style="width:100%">
-                <option value="ASIA">ASIA</option>
-                <option value="EMEA">EMEA</option>
-                <option value="LATAM">LATAM</option>
-                <option value="NAM">NAM</option>
-            </select>
-        </div>
+        <label>Report Schedule Time</label>
+        <input type="text" th:field="*{cronTriggerTime}" placeholder="Format: Second Minute Hour Day-of-Month Month Day-of-Week" required>
 
-        <!-- COUNTRY Multi-select -->
-        <div id="countryContainer" class="mb-3" style="display:none;">
-            <label for="deskAccess" class="form-label fw-bold">Select Country(ies)</label>
-            <select th:field="*{deskAccess}" id="deskAccess" multiple="multiple" style="width:100%">
-                <option value="INDIA">India</option>
-                <option value="BRAZIL">Brazil</option>
-                <option value="CANADA">Canada</option>
-                <option value="CHINA">China</option>
-                <option value="JAPAN">Japan</option>
-                <option value="MEXICO">Mexico</option>
-                <option value="NEW YORK">New York</option>
-            </select>
-        </div>
+        <label for="timeZone">Select Time Zone:</label>
+        <select th:field="*{timeZone}" id="timeZone" required>
+            <option value="IST">IST</option>
+            <option value="GMT">GMT</option>
+            <option value="SGT">SGT</option>
+        </select>
 
-        <button type="submit">Create Account</button>
+        <label for="enableBodyReport">Enable Email Body:</label>
+        <select th:field="*{enableBodyReport}" id="enableBodyReport" required>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </select>
+
+        <label for="includeExcelAttachment">Enable Excel Attachment:</label>
+        <select th:field="*{includeExcelAttachment}" id="includeExcelAttachment" required>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+        </select>
+
+<!--        <label>Excel Attachment</label>-->
+<!--        <input type="text" th:field="*{includeExcelAttachment}" placeholder="Enable excel attachment" required>-->
+
+        <button type="submit">Add Email Subscription</button>
     </form>
 </div>
 

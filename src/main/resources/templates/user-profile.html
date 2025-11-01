@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Admin Dashboard</title>
+    <title>User Dashboard</title>
     <meta charset="UTF-8">
     <style>
         body {
@@ -45,7 +45,7 @@
             color: white;
             cursor: pointer;
         }
-        .custom-admin-footer {
+        .custom-user-footer {
             background: #f4f6f9;
             text-align: center;
             padding: 10px 0;
@@ -151,8 +151,7 @@
         }
         .btn-edit { background: #28a745; }
         .btn-delete { background: #dc3545; }
-        .btn-admin { background: #17a2b8; }
-        .btn-logout { background: #6c757d; float: right; margin-top: -30px; }
+        .btn-logout { background: #6c757d; float: right; margin-top: 0px; }
         .btn-addUser { background: #007bff; float: right; color: white;}
         .btn-addEmail { background: #007bff; float: right; color: white;}
     </style>
@@ -161,34 +160,16 @@
     <link rel="stylesheet" th:href="@{/css/header-footer.css}">
 </head>
 <body>
-<div th:replace="~{fragments/header :: header('Admin Control Management')}"></div>
+
+<div th:replace="~{fragments/header :: header('User Profile Management')}"></div>
 
 <div class="container">
-    <h2 style="text-align: center; color:red; font-size: 28px;">Admin Panel</h2>
     <form th:action="@{/logout}" method="get">
         <button class="btn btn-logout">Logout</button>
     </form>
     &nbsp;
-    <h2 style="text-align: center;">Welcome, <span th:text="${adminUserName}"></span></h2>
+    <h2 style="text-align: center;">Welcome, <span th:text="${userName}"></span></h2>
     &nbsp;&nbsp;
-
-<!--    <form th:action="@{/addUser}" method="get">-->
-<!--        <button class="btn btn-addUser">Add New User</button>-->
-<!--    </form>-->
-
-    <!--    <h3>User Management</h3>-->
-<!--    <form th:action="@{/admin-profile}" method="get">-->
-<!--        <button class="btn btn-addEmail">User Management</button>-->
-<!--    </form>-->
-
-<!--    <form th:action="@{/email-management}" method="get">-->
-<!--        <button class="btn btn-addEmail">Email Management</button>-->
-<!--    </form>-->
-
-<!--    <div class="switcher">-->
-<!--        <button class="switch-btn active" th:classappend="${activeTab == 'userManagement'} ? ' active'" onclick="showSection('user-management', this)">User Management</button>-->
-<!--        <button class="switch-btn" th:classappend="${activeTab == 'emailManagement'} ? ' active'" onclick="showSection('email-management', this)">Email Management</button>-->
-<!--    </div>-->
     <div class="switcher">
         <button class="switch-btn"
                 th:classappend="${activeTab == 'userManagement'} ? ' active' : ''"
@@ -205,10 +186,6 @@
 
     <!-- User Management Section -->
     <div id="user-management" th:class="'section ' + (${activeTab} == 'userManagement' ? 'active' : '')">
-        <form th:action="@{/addUser}" method="get">
-            <button class="btn btn-addUser">Add New User</button>
-        </form>
-        &nbsp;
         <table>
             <thead>
             <tr>
@@ -219,7 +196,6 @@
                 <th>Access</th>
                 <th>Type</th>
                 <th>Actions</th>
-                <th>Admin Access Control</th>
             </tr>
             </thead>
             <tbody>
@@ -231,20 +207,9 @@
                 <td style="text-align: left;" th:text="${u.userType}"></td>
                 <td style="text-align: left;" th:text="${u.accessLevel}"></td>
                 <td>
-                    <form th:action="@{/admin-profile/delete}" method="post" style="display:inline;">
-                        <input type="hidden" name="userId" th:value="${u.userId}" />
-                        <button class="btn btn-delete" type="submit">Delete</button>
-                    </form>
-                    <form th:action="@{/admin-profile/edit}" method="get" style="display:inline;">
+                    <form th:action="@{/user-profile/edit}" method="get" style="display:inline;">
                         <input type="hidden" name="userId" th:value="${u.userId}" />
                         <button class="btn btn-edit" type="submit">Edit</button>
-                    </form>
-                </td>
-                <td>
-                    <form th:action="@{/admin-profile/toggle-admin}" method="post" style="display:inline;">
-                        <input type="hidden" name="userId" th:value="${u.userId}" />
-                        <button class="btn btn-admin"
-                                th:text="${u.userType == 'ADMIN' ? 'Revoke Admin' : 'Grant Admin'}"></button>
                     </form>
                 </td>
             </tr>
@@ -273,6 +238,11 @@
             </tr>
             </thead>
             <tbody>
+            <tr th:if="${#lists.isEmpty(emailSubscriptions)}">
+                <td colspan="10" style="text-align:center; border:15px; color: #888; font-style: italic; padding: 15px;">
+                    No Email Subscriptions to display.
+                </td>
+            </tr>
             <tr th:each="email : ${emailSubscriptions}">
                 <td th:text="${email.schedulerId}"></td>
                 <td style="text-align: left;" th:text="${email.userId}"></td>
@@ -328,53 +298,9 @@
         </table>
     </div>
 
-
-<!--    &nbsp;-->
-<!--    <table>-->
-<!--        <thead>-->
-<!--        <tr>-->
-<!--            <th>User ID</th>-->
-<!--            <th>First Name</th>-->
-<!--            <th>Last Name</th>-->
-<!--            <th>Email</th>-->
-<!--            <th>Access</th>-->
-<!--            <th>Type</th>-->
-<!--            <th>Actions</th>-->
-<!--            <th>Admin Access Control</th>-->
-<!--        </tr>-->
-<!--        </thead>-->
-<!--        <tbody>-->
-<!--        <tr th:each="u : ${users}">-->
-<!--            <td style="text-align: left;" th:text="${u.userId}"></td>-->
-<!--            <td style="text-align: left;" th:text="${u.firstName}"></td>-->
-<!--            <td style="text-align: left;" th:text="${u.lastName}"></td>-->
-<!--            <td style="text-align: left;" th:text="${u.emailId}"></td>-->
-<!--            <td style="text-align: left;" th:text="${u.userType}"></td>-->
-<!--            <td style="text-align: left;" th:text="${u.accessLevel}"></td>-->
-<!--            <td>-->
-<!--                <form th:action="@{/admin-profile/delete}" method="post" style="display:inline;">-->
-<!--                    <input type="hidden" name="userId" th:value="${u.userId}"/>-->
-<!--                    <button class="btn btn-delete" type="submit">Delete</button>-->
-<!--                </form>-->
-<!--                <form th:action="@{/admin-profile/edit}" method="get" style="display:inline;">-->
-<!--                    <input type="hidden" name="userId" th:value="${u.userId}"/>-->
-<!--                    <button class="btn btn-edit" type="submit">Edit</button>-->
-<!--                </form>-->
-<!--            </td>-->
-<!--            <td>-->
-<!--                <form th:action="@{/admin-profile/toggle-admin}" method="post" style="display:inline;">-->
-<!--                    <input type="hidden" name="userId" th:value="${u.userId}"/>-->
-<!--                    <button class="btn btn-admin"-->
-<!--                            th:text="${u.userType == 'ADMIN' ? 'Revoke Admin' : 'Grant Admin'}"></button>-->
-<!--                </form>-->
-<!--            </td>-->
-<!--        </tr>-->
-<!--        </tbody>-->
-<!--    </table>-->
-
 </div>
 <div id="toast" class="toast"></div>
-<div class="custom-admin-footer" th:replace="~{fragments/footer :: footer}"></div>
+<div class="custom-user-footer" th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserNotifaction {
+public class Notification {
 
     private String message;
     private TaskStatus status;

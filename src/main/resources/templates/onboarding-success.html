@@ -58,7 +58,7 @@
     <link rel="stylesheet" th:href="@{/css/header-footer.css}">
 </head>
 <body>
-<div th:replace="~{fragments/header :: header}"></div>
+<div th:replace="~{fragments/header :: header('User OnBoarding Portal')}"></div>
 <div class="registered-form">
     <th:block th:if="${status == 'COMPLETED'}">
         <h1 style="color: green;">Registration Successful</h1>
